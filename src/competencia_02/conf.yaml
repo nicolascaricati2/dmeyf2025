@@ -1,4 +1,4 @@
-STUDY_NAME: Entreno con 2019
+STUDY_NAME: Solo saco meses problematicos e Inputo Ceros
 competencia01:
   BUCKET_NAME: ../../../buckets/b1/Compe_02
   COSTO_ESTIMULO: 20000
