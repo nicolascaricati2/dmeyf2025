@@ -130,7 +130,7 @@ def main():
         # for i in (1,2):
         #     df_fe = feature_engineering_lag(df_fe, columnas=atributos, cant_lag=i)
         for i in (2,3,6,12,18,24,30):
-            df_fe = feature_engineering_regr_slope_window(df_fe, columnas=columnas_para_fe_regresiones, ventanas = i)
+            df_fe = feature_engineering_regr_slope_window(df_fe, columnas=columnas_para_fe_regresiones, ventana = i)
             df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})
         for i in (2,3,4):
             df_fe = feature_engineering_delta(df_fe, columnas=columnas_para_fe_deltas, cant_delta = i)
