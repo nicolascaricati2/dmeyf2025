@@ -879,7 +879,6 @@ def feature_engineering_regr_slope_window(df: pd.DataFrame, columnas: list[str],
 
 
 
-
 def imputar_ceros_por_mes_anterior(df: pd.DataFrame, columnas_no_imputar: list[str] = []) -> pd.DataFrame:
     """
     Reemplaza valores cero en columnas de features para un foto_mes completo
@@ -897,13 +896,25 @@ def imputar_ceros_por_mes_anterior(df: pd.DataFrame, columnas_no_imputar: list[s
     pd.DataFrame
         DataFrame con ceros imputados desde el mes anterior si corresponde
     """
-    df = df.sort_values(['numero_de_cliente', 'foto_mes']).copy()
+    df = df.copy()
+
+    # Validaciones de integridad
+    if 'foto_mes' not in df.columns or 'numero_de_cliente' not in df.columns:
+        raise ValueError("El DataFrame debe contener las columnas 'foto_mes' y 'numero_de_cliente'")
+
+    df['foto_mes'] = pd.to_numeric(df['foto_mes'], errors='coerce').astype('Int64')
+    assert df['foto_mes'].notna().all(), "Hay valores nulos en foto_mes"
+    assert df['foto_mes'].dtype == 'Int64', "foto_mes no está en formato entero"
+
+    df = df.sort_values(['numero_de_cliente', 'foto_mes'])
+
     columnas = [col for col in df.columns if col not in ['numero_de_cliente', 'foto_mes'] + columnas_no_imputar]
 
     for col in columnas:
         # Detectar meses donde todos los valores son cero
         meses_con_ceros = df.groupby('foto_mes')[col].agg(lambda x: (x == 0).all())
-        meses_a_imputar = meses_con_ceros[meses_con_ceros].index.tolist()
+        meses_con_ceros = meses_con_ceros.dropna()
+        meses_a_imputar = meses_con_ceros[meses_con_ceros == True].index.tolist()
 
         for mes in meses_a_imputar:
             mask_mes = df['foto_mes'] == mes
@@ -912,6 +923,3 @@ def imputar_ceros_por_mes_anterior(df: pd.DataFrame, columnas_no_imputar: list[s
             df.drop(columns=[f'{col}_prev'], inplace=True)
 
     return df
-
-
-
