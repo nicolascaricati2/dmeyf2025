@@ -1,4 +1,4 @@
-STUDY_NAME: Solo saco meses problematicos e Inputo Ceros V2
+STUDY_NAME: Solo saco 202006 y no corrijo ceros V2
 competencia01:
   BUCKET_NAME: ../../../buckets/b1/Compe_02
   COSTO_ESTIMULO: 20000
