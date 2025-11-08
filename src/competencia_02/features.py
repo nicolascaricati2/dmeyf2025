@@ -883,6 +883,7 @@ def imputar_ceros_por_mes_anterior(df: pd.DataFrame, columnas_no_imputar: list[s
     """
     Reemplaza valores cero en columnas de features para un foto_mes completo
     si todos los clientes tienen cero en ese mes, usando el valor del mes anterior por cliente.
+    Registra en logs qué columnas y semanas fueron imputadas.
 
     Parameters
     ----------
@@ -896,6 +897,8 @@ def imputar_ceros_por_mes_anterior(df: pd.DataFrame, columnas_no_imputar: list[s
     pd.DataFrame
         DataFrame con ceros imputados desde el mes anterior si corresponde
     """
+    import logging
+    logger = logging.getLogger(__name__)
     df = df.copy()
 
     # Validaciones de integridad
@@ -910,16 +913,24 @@ def imputar_ceros_por_mes_anterior(df: pd.DataFrame, columnas_no_imputar: list[s
 
     columnas = [col for col in df.columns if col not in ['numero_de_cliente', 'foto_mes'] + columnas_no_imputar]
 
+    imputaciones = {}
+
     for col in columnas:
-        # Detectar meses donde todos los valores son cero
         meses_con_ceros = df.groupby('foto_mes')[col].agg(lambda x: (x == 0).all())
         meses_con_ceros = meses_con_ceros.dropna()
         meses_a_imputar = meses_con_ceros[meses_con_ceros == True].index.tolist()
+
+        if meses_a_imputar:
+            imputaciones[col] = meses_a_imputar
 
         for mes in meses_a_imputar:
             mask_mes = df['foto_mes'] == mes
             df[f'{col}_prev'] = df.groupby('numero_de_cliente')[col].shift(1)
             df.loc[mask_mes & (df[col] == 0), col] = df.loc[mask_mes & (df[col] == 0), f'{col}_prev']
             df.drop(columns=[f'{col}_prev'], inplace=True)
+
+    # Log de imputaciones realizadas
+    for col, semanas in imputaciones.items():
+        logger.info(f"Imputación realizada en columna '{col}' para semanas: {semanas}")
 
     return df
