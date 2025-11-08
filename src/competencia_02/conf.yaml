@@ -1,4 +1,4 @@
-STUDY_NAME: Testing Git en Nueva VM
+STUDY_NAME: Todos los meses y sin data quality
 competencia01:
   BUCKET_NAME: ../../../buckets/b1/Compe_02
   COSTO_ESTIMULO: 20000
