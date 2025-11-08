@@ -1,4 +1,4 @@
-STUDY_NAME: Todos los meses y sin data quality
+STUDY_NAME: Todos los meses y sin data quality V2
 competencia01:
   BUCKET_NAME: ../../../buckets/b1/Compe_02
   COSTO_ESTIMULO: 20000
