@@ -764,14 +764,10 @@ def detectar_variable_excluida(study_name: str) -> str | None:
 
 
 
-import pandas as pd
-import duckdb
-import logging
-
-def feature_engineering_regr_slope_window(df: pd.DataFrame, columnas: list[str], ventanas: list[int] = [2, 3, 5, 8, 13, 21, 34]) -> pd.DataFrame:
+def feature_engineering_regr_slope_window(df: pd.DataFrame, columnas: list[str], ventana: int = 3) -> pd.DataFrame:
     """
-    Calcula la pendiente de regresión (slope) de cada atributo respecto al tiempo (foto_mes)
-    para cada cliente, usando múltiples ventanas móviles, excluyendo datos anteriores si hay saltos >2 meses.
+    Calcula la pendiente de regresión (slope) de cada atributo especificado respecto al tiempo (foto_mes)
+    para cada cliente, usando una ventana móvil de meses.
 
     Parameters
     ----------
@@ -779,87 +775,69 @@ def feature_engineering_regr_slope_window(df: pd.DataFrame, columnas: list[str],
         DataFrame con los datos, debe contener 'numero_de_cliente' y 'foto_mes'
     columnas : list[str]
         Lista de columnas sobre las cuales calcular la pendiente
-    ventanas : list[int], default=[2,3,5,8,13,21,34]
-        Lista de tamaños de ventana para calcular la pendiente
+    ventana : int, default=3
+        Cantidad de meses de la ventana móvil
 
     Returns
     -------
     pd.DataFrame
-        DataFrame con columnas 'slope_<col>_<ventana>_window' agregadas
+        DataFrame con nuevas columnas 'slope_<atributo>_<ventana>_window' agregadas
     """
+    import duckdb
+    import logging
+
     logger = logging.getLogger(__name__)
-    logger.info(f"Calculando slope con ventanas variables {ventanas} para {len(columnas)} atributos")
+    logger.info(f"Calculando slope con ventana móvil de {ventana} meses para {len(columnas)} atributos")
 
     if not columnas:
         logger.warning("No se especificaron atributos para calcular slope")
         return df
 
-    # Detectar rupturas temporales (>2 meses) y conservar solo el bloque más reciente por cliente
-    df = df.sort_values(['numero_de_cliente', 'foto_mes'])
-    df['delta_mes'] = df.groupby('numero_de_cliente')['foto_mes'].diff()
-    df['ruptura'] = (df['delta_mes'] > 2).fillna(False)
-
-    # Marcar bloques por cliente
-    df['bloque'] = df.groupby('numero_de_cliente')['ruptura'].cumsum()
-
-    # Conservar solo el bloque más reciente por cliente
-    df['bloque_max'] = df.groupby('numero_de_cliente')['bloque'].transform('max')
-    df_filtrado = df[df['bloque'] == df['bloque_max']].drop(columns=['delta_mes', 'ruptura', 'bloque', 'bloque_max'])
-
-    # Registrar en DuckDB
     con = duckdb.connect(database=":memory:")
-    con.register("df", df_filtrado)
+    con.register("df", df)
 
     slope_exprs = []
     for col in columnas:
         if col in df.columns:
-            for ventana in ventanas:
-                expr = f"""
-                    CASE WHEN COUNT(*) OVER (
+            expr = f"""
+                AVG(foto_mes * {col}) OVER (
+                    PARTITION BY numero_de_cliente
+                    ORDER BY foto_mes
+                    ROWS BETWEEN {ventana-1} PRECEDING AND CURRENT ROW
+                )
+                -
+                AVG(foto_mes) OVER (
+                    PARTITION BY numero_de_cliente
+                    ORDER BY foto_mes
+                    ROWS BETWEEN {ventana-1} PRECEDING AND CURRENT ROW
+                )
+                *
+                AVG({col}) OVER (
+                    PARTITION BY numero_de_cliente
+                    ORDER BY foto_mes
+                    ROWS BETWEEN {ventana-1} PRECEDING AND CURRENT ROW
+                )
+                /
+                (
+                    AVG(foto_mes * foto_mes) OVER (
                         PARTITION BY numero_de_cliente
                         ORDER BY foto_mes
                         ROWS BETWEEN {ventana-1} PRECEDING AND CURRENT ROW
-                    ) >= {ventana}
-                    THEN (
-                        AVG(foto_mes * {col}) OVER (
-                            PARTITION BY numero_de_cliente
-                            ORDER BY foto_mes
-                            ROWS BETWEEN {ventana-1} PRECEDING AND CURRENT ROW
-                        )
-                        -
-                        AVG(foto_mes) OVER (
-                            PARTITION BY numero_de_cliente
-                            ORDER BY foto_mes
-                            ROWS BETWEEN {ventana-1} PRECEDING AND CURRENT ROW
-                        )
-                        *
-                        AVG({col}) OVER (
-                            PARTITION BY numero_de_cliente
-                            ORDER BY foto_mes
-                            ROWS BETWEEN {ventana-1} PRECEDING AND CURRENT ROW
-                        )
-                        /
-                        (
-                            AVG(foto_mes * foto_mes) OVER (
-                                PARTITION BY numero_de_cliente
-                                ORDER BY foto_mes
-                                ROWS BETWEEN {ventana-1} PRECEDING AND CURRENT ROW
-                            )
-                            -
-                            AVG(foto_mes) OVER (
-                                PARTITION BY numero_de_cliente
-                                ORDER BY foto_mes
-                                ROWS BETWEEN {ventana-1} PRECEDING AND CURRENT ROW
-                            ) * 
-                            AVG(foto_mes) OVER (
-                                PARTITION BY numero_de_cliente
-                                ORDER BY foto_mes
-                                ROWS BETWEEN {ventana-1} PRECEDING AND CURRENT ROW
-                            )
-                        )
-                    ELSE NULL END AS slope_{col}_{ventana}_window
-                """
-                slope_exprs.append(expr)
+                    )
+                    -
+                    AVG(foto_mes) OVER (
+                        PARTITION BY numero_de_cliente
+                        ORDER BY foto_mes
+                        ROWS BETWEEN {ventana-1} PRECEDING AND CURRENT ROW
+                    ) * 
+                    AVG(foto_mes) OVER (
+                        PARTITION BY numero_de_cliente
+                        ORDER BY foto_mes
+                        ROWS BETWEEN {ventana-1} PRECEDING AND CURRENT ROW
+                    )
+                ) AS slope_{col}_{ventana}_window
+            """
+            slope_exprs.append(expr)
         else:
             logger.warning(f"Columna {col} no encontrada en df")
 
@@ -873,10 +851,8 @@ def feature_engineering_regr_slope_window(df: pd.DataFrame, columnas: list[str],
     df_resultado = con.execute(sql).df()
     con.close()
 
-    logger.info(f"Slope calculado. DataFrame resultante con {df_resultado.shape[1]} columnas")
+    logger.info(f"Slope con ventana móvil calculado. DataFrame resultante con {df_resultado.shape[1]} columnas")
     return df_resultado
-
-
 
 
 def imputar_ceros_por_mes_anterior(df: pd.DataFrame, columnas_no_imputar: list[str] = []) -> pd.DataFrame:
