@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 import polars as pl
 from features import feature_engineering_lag, feature_engineering_delta, feature_engineering_regr_slope_window, feature_engineering_ratio, feature_engineering_tc_total, generar_ctrx_features, feature_engineering_cpayroll_trx_corregida, feature_engineering_mpayroll_corregida, variables_aux,feature_engineering_robust_by_month_polars,ajustar_por_ipc, detectar_grupo_excluido, detectar_variable_excluida
-from loader import cargar_datos, convertir_clase_ternaria_a_target
+from loader import cargar_datos, convertir_clase_ternaria_a_target, imputar_ceros_por_mes_anterior
 from optimization import *
 from best_params import cargar_mejores_hiperparametros
 from final_training import preparar_datos_entrenamiento_final, generar_predicciones_finales, entrenar_modelo_final,feature_importance,entrenar_modelo_final_undersampling
@@ -94,8 +94,17 @@ def main():
 
     
         # 2. Feature Engineering
+
+        # Excluyo meses problematicos
+        meses_excluir = [201904,201905, 201910, 202006]
+        df_fe = df_fe[~df_fe["foto_mes"].isin(meses_excluir)].copy()
+        logger.info(f"Después de excluir meses problemáticos: {df_fe.shape}")
+
+        # Imputacion para corregir 0s
+        df_fe = imputar_ceros_por_mes_anterior(df_fe, columnas_no_imputar=['target','target_to_calculate_gan'])
+
         # Excluyo Comisiones Otras 
-        df_fe = df_fe.drop(columns=['ccomisiones_otras'])
+        df_fe = df_fe.drop(columns=['ccomisiones_otras','internet'])
 
         # Excluyo las variables no corregidas
         cols_ajustar_ipc = [

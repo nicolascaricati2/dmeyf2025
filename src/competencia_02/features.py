@@ -173,95 +173,95 @@ def feature_engineering_tc_total(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
     
-def feature_engineering_regr_slope_window(df: pd.DataFrame, columnas: list[str], ventana: int = 3) -> pd.DataFrame:
-        """
-        Calcula la pendiente de regresión (slope) de cada atributo especificado respecto al tiempo (foto_mes)
-        para cada cliente, usando una ventana móvil de meses.
+# def feature_engineering_regr_slope_window(df: pd.DataFrame, columnas: list[str], ventana: int = 3) -> pd.DataFrame:
+#         """
+#         Calcula la pendiente de regresión (slope) de cada atributo especificado respecto al tiempo (foto_mes)
+#         para cada cliente, usando una ventana móvil de meses.
     
-        Parameters
-        ----------
-        df : pd.DataFrame
-            DataFrame con los datos, debe contener 'numero_de_cliente' y 'foto_mes'
-        columnas : list[str]
-            Lista de columnas sobre las cuales calcular la pendiente
-        ventana : int, default=12
-            Cantidad de meses de la ventana móvil
+#         Parameters
+#         ----------
+#         df : pd.DataFrame
+#             DataFrame con los datos, debe contener 'numero_de_cliente' y 'foto_mes'
+#         columnas : list[str]
+#             Lista de columnas sobre las cuales calcular la pendiente
+#         ventana : int, default=12
+#             Cantidad de meses de la ventana móvil
     
-        Returns
-        -------
-        pd.DataFrame
-            DataFrame con nuevas columnas 'slope_<atributo>_window' agregadas
-        """
+#         Returns
+#         -------
+#         pd.DataFrame
+#             DataFrame con nuevas columnas 'slope_<atributo>_window' agregadas
+#         """
     
-        logger = logging.getLogger(__name__)
-        logger.info(f"Calculando slope con ventana móvil de {ventana} meses para {len(columnas)} atributos")
+#         logger = logging.getLogger(__name__)
+#         logger.info(f"Calculando slope con ventana móvil de {ventana} meses para {len(columnas)} atributos")
     
-        if not columnas:
-            logger.warning("No se especificaron atributos para calcular slope")
-            return df
+#         if not columnas:
+#             logger.warning("No se especificaron atributos para calcular slope")
+#             return df
     
-        con = duckdb.connect(database=":memory:")
-        con.register("df", df)
+#         con = duckdb.connect(database=":memory:")
+#         con.register("df", df)
     
-        # Construir expresiones de slope para cada columna
-        slope_exprs = []
-        for col in columnas:
-            if col in df.columns:
-                # slope = cov(x, y) / var(x) usando ventana de ROWS
-                expr = f"""
-                    AVG(foto_mes * {col}) OVER (
-                        PARTITION BY numero_de_cliente
-                        ORDER BY foto_mes
-                        ROWS BETWEEN {ventana-1} PRECEDING AND CURRENT ROW
-                    )
-                    -
-                    AVG(foto_mes) OVER (
-                        PARTITION BY numero_de_cliente
-                        ORDER BY foto_mes
-                        ROWS BETWEEN {ventana-1} PRECEDING AND CURRENT ROW
-                    )
-                    *
-                    AVG({col}) OVER (
-                        PARTITION BY numero_de_cliente
-                        ORDER BY foto_mes
-                        ROWS BETWEEN {ventana-1} PRECEDING AND CURRENT ROW
-                    )
-                    /
-                    (
-                        AVG(foto_mes * foto_mes) OVER (
-                            PARTITION BY numero_de_cliente
-                            ORDER BY foto_mes
-                            ROWS BETWEEN {ventana-1} PRECEDING AND CURRENT ROW
-                        )
-                        -
-                        AVG(foto_mes) OVER (
-                            PARTITION BY numero_de_cliente
-                            ORDER BY foto_mes
-                            ROWS BETWEEN {ventana-1} PRECEDING AND CURRENT ROW
-                        ) * 
-                        AVG(foto_mes) OVER (
-                            PARTITION BY numero_de_cliente
-                            ORDER BY foto_mes
-                            ROWS BETWEEN {ventana-1} PRECEDING AND CURRENT ROW
-                        )
-                    ) AS slope_{col}_{ventana}_window
-                """
-                slope_exprs.append(expr)
-            else:
-                logger.warning(f"Columna {col} no encontrada en df")
+#         # Construir expresiones de slope para cada columna
+#         slope_exprs = []
+#         for col in columnas:
+#             if col in df.columns:
+#                 # slope = cov(x, y) / var(x) usando ventana de ROWS
+#                 expr = f"""
+#                     AVG(foto_mes * {col}) OVER (
+#                         PARTITION BY numero_de_cliente
+#                         ORDER BY foto_mes
+#                         ROWS BETWEEN {ventana-1} PRECEDING AND CURRENT ROW
+#                     )
+#                     -
+#                     AVG(foto_mes) OVER (
+#                         PARTITION BY numero_de_cliente
+#                         ORDER BY foto_mes
+#                         ROWS BETWEEN {ventana-1} PRECEDING AND CURRENT ROW
+#                     )
+#                     *
+#                     AVG({col}) OVER (
+#                         PARTITION BY numero_de_cliente
+#                         ORDER BY foto_mes
+#                         ROWS BETWEEN {ventana-1} PRECEDING AND CURRENT ROW
+#                     )
+#                     /
+#                     (
+#                         AVG(foto_mes * foto_mes) OVER (
+#                             PARTITION BY numero_de_cliente
+#                             ORDER BY foto_mes
+#                             ROWS BETWEEN {ventana-1} PRECEDING AND CURRENT ROW
+#                         )
+#                         -
+#                         AVG(foto_mes) OVER (
+#                             PARTITION BY numero_de_cliente
+#                             ORDER BY foto_mes
+#                             ROWS BETWEEN {ventana-1} PRECEDING AND CURRENT ROW
+#                         ) * 
+#                         AVG(foto_mes) OVER (
+#                             PARTITION BY numero_de_cliente
+#                             ORDER BY foto_mes
+#                             ROWS BETWEEN {ventana-1} PRECEDING AND CURRENT ROW
+#                         )
+#                     ) AS slope_{col}_{ventana}_window
+#                 """
+#                 slope_exprs.append(expr)
+#             else:
+#                 logger.warning(f"Columna {col} no encontrada en df")
     
-        sql = f"""
-            SELECT *,
-                   {', '.join(slope_exprs)}
-            FROM df
-        """
+#         sql = f"""
+#             SELECT *,
+#                    {', '.join(slope_exprs)}
+#             FROM df
+#         """
     
-        logger.debug(f"Consulta SQL slope ventana: {sql[:500]}...")  # Limitar tamaño del log
-        df = con.execute(sql).df()
-        con.close()
+#         logger.debug(f"Consulta SQL slope ventana: {sql[:500]}...")  # Limitar tamaño del log
+#         df = con.execute(sql).df()
+#         con.close()
     
-        logger.info(f"Slope con ventana móvil calculado. DataFrame resultante con {df.shape[1]} columnas")
-        return df
+#         logger.info(f"Slope con ventana móvil calculado. DataFrame resultante con {df.shape[1]} columnas")
+#         return df
 
 def feature_engineering_ratio(df: pd.DataFrame, columnas: list[str]) -> pd.DataFrame:
     """
@@ -760,4 +760,158 @@ def detectar_variable_excluida(study_name: str) -> str | None:
     if match:
         return match.group(1)
     return None
+
+
+
+
+import pandas as pd
+import duckdb
+import logging
+
+def feature_engineering_regr_slope_variable_windows(df: pd.DataFrame, columnas: list[str], ventanas: list[int] = [2, 3, 5, 8, 13, 21, 34]) -> pd.DataFrame:
+    """
+    Calcula la pendiente de regresión (slope) de cada atributo respecto al tiempo (foto_mes)
+    para cada cliente, usando múltiples ventanas móviles, excluyendo datos anteriores si hay saltos >2 meses.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame con los datos, debe contener 'numero_de_cliente' y 'foto_mes'
+    columnas : list[str]
+        Lista de columnas sobre las cuales calcular la pendiente
+    ventanas : list[int], default=[2,3,5,8,13,21,34]
+        Lista de tamaños de ventana para calcular la pendiente
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame con columnas 'slope_<col>_<ventana>_window' agregadas
+    """
+    logger = logging.getLogger(__name__)
+    logger.info(f"Calculando slope con ventanas variables {ventanas} para {len(columnas)} atributos")
+
+    if not columnas:
+        logger.warning("No se especificaron atributos para calcular slope")
+        return df
+
+    # Detectar rupturas temporales (>2 meses) y conservar solo el bloque más reciente por cliente
+    df = df.sort_values(['numero_de_cliente', 'foto_mes'])
+    df['delta_mes'] = df.groupby('numero_de_cliente')['foto_mes'].diff()
+    df['ruptura'] = (df['delta_mes'] > 2).fillna(False)
+
+    # Marcar bloques por cliente
+    df['bloque'] = df.groupby('numero_de_cliente')['ruptura'].cumsum()
+
+    # Conservar solo el bloque más reciente por cliente
+    df['bloque_max'] = df.groupby('numero_de_cliente')['bloque'].transform('max')
+    df_filtrado = df[df['bloque'] == df['bloque_max']].drop(columns=['delta_mes', 'ruptura', 'bloque', 'bloque_max'])
+
+    # Registrar en DuckDB
+    con = duckdb.connect(database=":memory:")
+    con.register("df", df_filtrado)
+
+    slope_exprs = []
+    for col in columnas:
+        if col in df.columns:
+            for ventana in ventanas:
+                expr = f"""
+                    CASE WHEN COUNT(*) OVER (
+                        PARTITION BY numero_de_cliente
+                        ORDER BY foto_mes
+                        ROWS BETWEEN {ventana-1} PRECEDING AND CURRENT ROW
+                    ) >= {ventana}
+                    THEN (
+                        AVG(foto_mes * {col}) OVER (
+                            PARTITION BY numero_de_cliente
+                            ORDER BY foto_mes
+                            ROWS BETWEEN {ventana-1} PRECEDING AND CURRENT ROW
+                        )
+                        -
+                        AVG(foto_mes) OVER (
+                            PARTITION BY numero_de_cliente
+                            ORDER BY foto_mes
+                            ROWS BETWEEN {ventana-1} PRECEDING AND CURRENT ROW
+                        )
+                        *
+                        AVG({col}) OVER (
+                            PARTITION BY numero_de_cliente
+                            ORDER BY foto_mes
+                            ROWS BETWEEN {ventana-1} PRECEDING AND CURRENT ROW
+                        )
+                        /
+                        (
+                            AVG(foto_mes * foto_mes) OVER (
+                                PARTITION BY numero_de_cliente
+                                ORDER BY foto_mes
+                                ROWS BETWEEN {ventana-1} PRECEDING AND CURRENT ROW
+                            )
+                            -
+                            AVG(foto_mes) OVER (
+                                PARTITION BY numero_de_cliente
+                                ORDER BY foto_mes
+                                ROWS BETWEEN {ventana-1} PRECEDING AND CURRENT ROW
+                            ) * 
+                            AVG(foto_mes) OVER (
+                                PARTITION BY numero_de_cliente
+                                ORDER BY foto_mes
+                                ROWS BETWEEN {ventana-1} PRECEDING AND CURRENT ROW
+                            )
+                        )
+                    ELSE NULL END AS slope_{col}_{ventana}_window
+                """
+                slope_exprs.append(expr)
+        else:
+            logger.warning(f"Columna {col} no encontrada en df")
+
+    sql = f"""
+        SELECT *,
+               {', '.join(slope_exprs)}
+        FROM df
+    """
+
+    logger.debug(f"Consulta SQL slope ventana: {sql[:500]}...")
+    df_resultado = con.execute(sql).df()
+    con.close()
+
+    logger.info(f"Slope calculado. DataFrame resultante con {df_resultado.shape[1]} columnas")
+    return df_resultado
+
+
+
+
+
+def imputar_ceros_por_mes_anterior(df: pd.DataFrame, columnas_no_imputar: list[str] = []) -> pd.DataFrame:
+    """
+    Reemplaza valores cero en columnas de features para un foto_mes completo
+    si todos los clientes tienen cero en ese mes, usando el valor del mes anterior por cliente.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame con columnas 'numero_de_cliente', 'foto_mes', y features numéricos
+    columnas_no_imputar : list[str], default=[]
+        Lista de columnas que no deben ser imputadas
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame con ceros imputados desde el mes anterior si corresponde
+    """
+    df = df.sort_values(['numero_de_cliente', 'foto_mes']).copy()
+    columnas = [col for col in df.columns if col not in ['numero_de_cliente', 'foto_mes'] + columnas_no_imputar]
+
+    for col in columnas:
+        # Detectar meses donde todos los valores son cero
+        meses_con_ceros = df.groupby('foto_mes')[col].agg(lambda x: (x == 0).all())
+        meses_a_imputar = meses_con_ceros[meses_con_ceros].index.tolist()
+
+        for mes in meses_a_imputar:
+            mask_mes = df['foto_mes'] == mes
+            df[f'{col}_prev'] = df.groupby('numero_de_cliente')[col].shift(1)
+            df.loc[mask_mes & (df[col] == 0), col] = df.loc[mask_mes & (df[col] == 0), f'{col}_prev']
+            df.drop(columns=[f'{col}_prev'], inplace=True)
+
+    return df
+
+
 
