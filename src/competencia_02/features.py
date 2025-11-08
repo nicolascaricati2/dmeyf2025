@@ -768,7 +768,7 @@ import pandas as pd
 import duckdb
 import logging
 
-def feature_engineering_regr_slope_variable_window(df: pd.DataFrame, columnas: list[str], ventanas: list[int] = [2, 3, 5, 8, 13, 21, 34]) -> pd.DataFrame:
+def feature_engineering_regr_slope_window(df: pd.DataFrame, columnas: list[str], ventanas: list[int] = [2, 3, 5, 8, 13, 21, 34]) -> pd.DataFrame:
     """
     Calcula la pendiente de regresión (slope) de cada atributo respecto al tiempo (foto_mes)
     para cada cliente, usando múltiples ventanas móviles, excluyendo datos anteriores si hay saltos >2 meses.
