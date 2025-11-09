@@ -32,9 +32,7 @@ def evaluar_meses_test(df_fe, mejores_params, semillas, study_name, config_meses
             semillas=semillas,
             mes_test=int(mes_test),
             meses_train=train_periodos,
-            study_name=study_name,
-            nombre_archivo=nombre_archivo
-        )
+            study_name=study_name)
 
 
         res = resultados["resultados_ensamble"]
