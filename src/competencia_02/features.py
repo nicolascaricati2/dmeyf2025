@@ -913,11 +913,10 @@ def imputar_ceros_por_mes_anterior(df: pd.DataFrame, columnas_no_imputar: list[s
 
 
 
-
-
-def generar_cambios_de_pendiente_multiples(df: pd.DataFrame, columnas: list[str], ventana_corta: int = 3, ventana_larga: int = 6) -> pd.DataFrame:
+def generar_cambios_de_pendiente_multiples_fast(df: pd.DataFrame, columnas: list[str], ventana_corta: int = 3, ventana_larga: int = 6) -> pd.DataFrame:
     """
-    Aplica el cálculo de pendiente y deltas de pendiente para múltiples columnas.
+    Calcula pendientes y deltas de pendiente para múltiples columnas en dos pasadas por DuckDB (una por ventana),
+    evitando múltiples llamadas por columna.
 
     Parameters
     ----------
@@ -926,42 +925,105 @@ def generar_cambios_de_pendiente_multiples(df: pd.DataFrame, columnas: list[str]
     columnas : list[str]
         Lista de variables sobre las cuales calcular pendiente
     ventana_corta : int
-        Tamaño de ventana corta (ej. 3)
+        Tamaño de ventana corta
     ventana_larga : int
-        Tamaño de ventana larga (ej. 6)
+        Tamaño de ventana larga
 
     Returns
     -------
     pd.DataFrame
-        DataFrame con columnas nuevas por cada variable:
+        DataFrame con columnas nuevas:
         - slope_<col>_<ventana>_window
         - delta_slope_shift_<col>_<ventana>
         - delta_slope_vs_<ventana_larga>_<col>
     """
-    for col in columnas:
-        # Calcular pendiente corta
-        df = feature_engineering_regr_slope_window(df, columnas=[col], ventana=ventana_corta)
-        col_slope_corta = f"slope_{col}_{ventana_corta}_window"
+    import duckdb
+    import logging
 
-        # Calcular pendiente larga
-        df = feature_engineering_regr_slope_window(df, columnas=[col], ventana=ventana_larga)
+    logger = logging.getLogger(__name__)
+    con = duckdb.connect(database=":memory:")
+    con.register("df", df)
+
+    def generar_sql_slope(columnas, ventana):
+        exprs = []
+        for col in columnas:
+            if col in df.columns:
+                exprs.append(f"""
+                    AVG(foto_mes * {col}) OVER (
+                        PARTITION BY numero_de_cliente
+                        ORDER BY foto_mes
+                        ROWS BETWEEN {ventana - 1} PRECEDING AND CURRENT ROW
+                    )
+                    -
+                    AVG(foto_mes) OVER (
+                        PARTITION BY numero_de_cliente
+                        ORDER BY foto_mes
+                        ROWS BETWEEN {ventana - 1} PRECEDING AND CURRENT ROW
+                    )
+                    *
+                    AVG({col}) OVER (
+                        PARTITION BY numero_de_cliente
+                        ORDER BY foto_mes
+                        ROWS BETWEEN {ventana - 1} PRECEDING AND CURRENT ROW
+                    )
+                    /
+                    (
+                        AVG(foto_mes * foto_mes) OVER (
+                            PARTITION BY numero_de_cliente
+                            ORDER BY foto_mes
+                            ROWS BETWEEN {ventana - 1} PRECEDING AND CURRENT ROW
+                        )
+                        -
+                        AVG(foto_mes) OVER (
+                            PARTITION BY numero_de_cliente
+                            ORDER BY foto_mes
+                            ROWS BETWEEN {ventana - 1} PRECEDING AND CURRENT ROW
+                        ) * 
+                        AVG(foto_mes) OVER (
+                            PARTITION BY numero_de_cliente
+                            ORDER BY foto_mes
+                            ROWS BETWEEN {ventana - 1} PRECEDING AND CURRENT ROW
+                        )
+                    ) AS slope_{col}_{ventana}_window
+                """)
+        return exprs
+
+    # Paso 1: calcular pendientes cortas
+    exprs_corta = generar_sql_slope(columnas, ventana_corta)
+    sql_corta = f"""
+        SELECT *, {', '.join(exprs_corta)}
+        FROM df
+    """
+    df = con.execute(sql_corta).df()
+
+    # Paso 2: calcular pendientes largas
+    exprs_larga = generar_sql_slope(columnas, ventana_larga)
+    sql_larga = f"""
+        SELECT *, {', '.join(exprs_larga)}
+        FROM df
+    """
+    df = con.execute(sql_larga).df()
+
+    con.close()
+
+    # Paso 3: calcular deltas en pandas
+    for col in columnas:
+        col_slope_corta = f"slope_{col}_{ventana_corta}_window"
         col_slope_larga = f"slope_{col}_{ventana_larga}_window"
 
-        # Delta entre pendiente actual y pendiente anterior (shift)
-        df[f"delta_slope_shift_{col}_{ventana_corta}"] = (
-            df.groupby("numero_de_cliente")[col_slope_corta].shift(ventana_corta)
-        )
-        df[f"delta_slope_shift_{col}_{ventana_corta}"] = (
-            df[col_slope_corta] - df[f"delta_slope_shift_{col}_{ventana_corta}"]
-        )
+        if col_slope_corta in df.columns and col_slope_larga in df.columns:
+            df[f"delta_slope_shift_{col}_{ventana_corta}"] = (
+                df.groupby("numero_de_cliente")[col_slope_corta].shift(ventana_corta)
+            )
+            df[f"delta_slope_shift_{col}_{ventana_corta}"] = (
+                df[col_slope_corta] - df[f"delta_slope_shift_{col}_{ventana_corta}"]
+            )
+            df[f"delta_slope_vs_{ventana_larga}_{col}"] = (
+                df[col_slope_corta] - df[col_slope_larga]
+            )
 
-        # Delta entre pendiente corta y larga
-        df[f"delta_slope_vs_{ventana_larga}_{col}"] = (
-            df[col_slope_corta] - df[col_slope_larga]
-        )
-
+    logger.info(f"Pendientes y deltas calculadas para {len(columnas)} columnas")
     return df
-
 
 
 def feature_engineering_delta_max(df: pd.DataFrame, columnas: list[str], ventana: int = 3) -> pd.DataFrame:

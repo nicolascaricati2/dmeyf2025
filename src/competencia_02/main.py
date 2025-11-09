@@ -133,17 +133,18 @@ def main():
         #     df_fe = feature_engineering_lag(df_fe, columnas=atributos, cant_lag=i)
 
         df_fe = generar_cambios_de_pendiente_multiples(df_fe, columnas=columnas_para_fe_regresiones, ventana_corta=3, ventana_larga=6)
-        df_fe = generar_cambios_de_pendiente_multiples(df_fe, columnas=columnas_para_fe_regresiones, ventana_corta=6, ventana_larga=12)
+        # df_fe = generar_cambios_de_pendiente_multiples(df_fe, columnas=columnas_para_fe_regresiones, ventana_corta=6, ventana_larga=12)
 
         # for i in (2,3,6,8,10,12,15):
         #     df_fe = feature_engineering_regr_slope_window(df_fe, columnas=columnas_para_fe_regresiones, ventana = i)
         #     df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})
         for i in (2,3):
             df_fe = feature_engineering_delta(df_fe, columnas=columnas_para_fe_deltas, cant_delta = i)
-            df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})  
         for i in (4,8):
-            df_fe = feature_engineering_delta_max(df_fe, columnas=columnas_para_deltas, ventana=4)
-            df_fe = feature_engineering_delta_mean(df_fe, columnas=columnas_para_deltas, ventana=4)
+            df_fe = feature_engineering_delta_max(df_fe, columnas=columnas_para_deltas, ventana=i)
+            df_fe = feature_engineering_delta_mean(df_fe, columnas=columnas_para_deltas, ventana=i)
+        
+        df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})  
 
     
     
