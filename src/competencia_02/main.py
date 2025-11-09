@@ -158,7 +158,7 @@ def main():
 
     # 4. Ejecutar optimización (función simple)
     
-    study = optimizar(df_fe, n_trials=3,study_name = STUDY_NAME ,undersampling = 1.0)
+    study = optimizar(df_fe, n_trials=60,study_name = STUDY_NAME ,undersampling = 1.0)
   
     # 5. Análisis adicional
     logger.info("=== ANÁLISIS DE RESULTADOS ===")
@@ -204,33 +204,33 @@ def main():
     # df_fe_under = undersample_clientes(df_fe, UNDERSAMPLING, 555557)
     # df_fe_under = df_fe_under.select_dtypes(include=["number", "bool"]).copy()
     
-    # # Evaluación multimes
-    # evaluar_meses_test(
-    #     df_fe=df_fe,
-    #     mejores_params=mejores_params,
-    #     semillas=SEMILLA,
-    #     study_name=STUDY_NAME,
-    #     config_meses=MESES_EVALUACION
-    # )
+    # Evaluación multimes
+    evaluar_meses_test(
+        df_fe=df_fe,
+        mejores_params=mejores_params,
+        semillas=SEMILLA,
+        study_name=STUDY_NAME,
+        config_meses=MESES_EVALUACION
+    )
 
 
-    #06 Entrenar modelo final
-    logger.info("=== ENTRENAMIENTO FINAL ===")
-    logger.info("Preparar datos para entrenamiento final")
-    X_train, y_train, X_predict, clientes_predict = preparar_datos_entrenamiento_final(df_fe)
+    # #06 Entrenar modelo final
+    # logger.info("=== ENTRENAMIENTO FINAL ===")
+    # logger.info("Preparar datos para entrenamiento final")
+    # X_train, y_train, X_predict, clientes_predict = preparar_datos_entrenamiento_final(df_fe)
   
-    # Entrenar modelo final
-    logger.info("Entrenar modelo final")
-    _ , modelo_final = entrenar_modelo_final_undersampling(X_train, y_train, X_predict ,mejores_params, SEMILLA, ratio_undersampling = 1)
+    # # Entrenar modelo final
+    # logger.info("Entrenar modelo final")
+    # _ , modelo_final = entrenar_modelo_final_undersampling(X_train, y_train, X_predict ,mejores_params, SEMILLA, ratio_undersampling = 1)
 
   
-    # Generar predicciones finales
-    logger.info("Generar predicciones finales")
-    resultados = generar_predicciones_finales(modelo_final, X_predict, clientes_predict, umbral=UMBRAL, top_k=TOP_K)
+    # # Generar predicciones finales
+    # logger.info("Generar predicciones finales")
+    # resultados = generar_predicciones_finales(modelo_final, X_predict, clientes_predict, umbral=UMBRAL, top_k=TOP_K)
   
-    # Guardar predicciones
-    logger.info("Guardar predicciones")
-    archivo_salida = guardar_predicciones_finales(resultados)
+    # # Guardar predicciones
+    # logger.info("Guardar predicciones")
+    # archivo_salida = guardar_predicciones_finales(resultados)
   
     # Resumen final
     logger.info("=== RESUMEN FINAL ===")
@@ -238,7 +238,7 @@ def main():
     logger.info(f"Mejores hiperparámetros utilizados: {mejores_params}")
     logger.info(f"Períodos de entrenamiento: {FINAL_TRAIN}")
     logger.info(f"Período de predicción: {FINAL_PREDIC}")
-    logger.info(f"Archivo de salida: {archivo_salida}")
+    # logger.info(f"Archivo de salida: {archivo_salida}")
     logger.info(f"Log detallado: logs/{nombre_log}")
 
 
