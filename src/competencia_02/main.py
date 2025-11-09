@@ -221,7 +221,7 @@ def main():
   
     # Entrenar modelo final
     logger.info("Entrenar modelo final")
-    _ , modelo_final = entrenar_modelo_final_undersampling(X_train, y_train, X_predict ,mejores_params, SEMILLA, ratio_undersampling = UNDERSAMPLING_MODELO_FINAL)
+    _ , modelo_final = entrenar_modelo_final_undersampling(X_train, y_train, X_predict ,mejores_params, SEMILLA, ratio_undersampling = 1)
 
   
     # Generar predicciones finales
