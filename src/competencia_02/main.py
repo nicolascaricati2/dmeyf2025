@@ -19,8 +19,7 @@ import re
 from evaluar_meses_test import evaluar_meses_test
 from snapshot import *
 from undersampling import undersample_clientes
-from analisis_optuna import analizar_resultados_optuna
-
+from analisis_optuna import *
 
 
 ### Configuración de logging ###
