@@ -1,3 +1,4 @@
+#optimizacion
 import optuna
 import lightgbm as lgb
 import pandas as pd
@@ -97,7 +98,6 @@ def objetivo_ganancia(trial, df, undersampling=0.2) -> float:
         "feature_fraction":{"min": 0.1, "max": 0.8, "type": "float"},
         "bagging_fraction":{"min": 0.2, "max": 0.8, "type": "float"},
     }
-
 
 
     # Merge entre YAML y defaults
@@ -285,7 +285,6 @@ def objetivo_ganancia_ensamble(trial, df, undersampling=0.2) -> float:
             valid_sets=[lgb_train, lgb_val],
             valid_names=['train', 'valid'],
             feval=ganancia_evaluator,
-            num_boost_round=1000,
             callbacks=[
                 lgb.early_stopping(stopping_rounds=50),
                 lgb.log_evaluation(period=50),
