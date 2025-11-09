@@ -204,21 +204,14 @@ def main():
     # df_fe_under = undersample_clientes(df_fe, UNDERSAMPLING, 555557)
     # df_fe_under = df_fe_under.select_dtypes(include=["number", "bool"]).copy()
     
-    # Evaluación multimes
-    evaluar_meses_test(
-        df_fe=df_fe,
-        mejores_params=mejores_params,
-        semillas=SEMILLA,
-        study_name=STUDY_NAME,
-        config_meses=MESES_EVALUACION
-    )
-
-    
-    # Mostrar resumen del ensamble total
-    res = resultados_grafico["resultados_ensamble"]
-    logger.info("=== RESUMEN DE EVALUACIÓN EN TEST (ENSAMBLE TOTAL) ===")
-    logger.info(f"✅ Ganancia en test: {res['ganancia_test']:,.0f}")
-    logger.info(f"🎯 Predicciones positivas: {res['predicciones_positivas']:,} ({res['porcentaje_positivas']:.2f}%)")
+    # # Evaluación multimes
+    # evaluar_meses_test(
+    #     df_fe=df_fe,
+    #     mejores_params=mejores_params,
+    #     semillas=SEMILLA,
+    #     study_name=STUDY_NAME,
+    #     config_meses=MESES_EVALUACION
+    # )
 
 
     #06 Entrenar modelo final
