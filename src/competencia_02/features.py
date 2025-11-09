@@ -910,3 +910,164 @@ def imputar_ceros_por_mes_anterior(df: pd.DataFrame, columnas_no_imputar: list[s
         logger.info(f"Imputación realizada en columna '{col}' para semanas: {semanas}")
 
     return df
+
+
+
+
+
+def generar_cambios_de_pendiente_multiples(df: pd.DataFrame, columnas: list[str], ventana_corta: int = 3, ventana_larga: int = 6) -> pd.DataFrame:
+    """
+    Aplica el cálculo de pendiente y deltas de pendiente para múltiples columnas.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame con 'numero_de_cliente' y 'foto_mes'
+    columnas : list[str]
+        Lista de variables sobre las cuales calcular pendiente
+    ventana_corta : int
+        Tamaño de ventana corta (ej. 3)
+    ventana_larga : int
+        Tamaño de ventana larga (ej. 6)
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame con columnas nuevas por cada variable:
+        - slope_<col>_<ventana>_window
+        - delta_slope_shift_<col>_<ventana>
+        - delta_slope_vs_<ventana_larga>_<col>
+    """
+    for col in columnas:
+        # Calcular pendiente corta
+        df = feature_engineering_regr_slope_window(df, columnas=[col], ventana=ventana_corta)
+        col_slope_corta = f"slope_{col}_{ventana_corta}_window"
+
+        # Calcular pendiente larga
+        df = feature_engineering_regr_slope_window(df, columnas=[col], ventana=ventana_larga)
+        col_slope_larga = f"slope_{col}_{ventana_larga}_window"
+
+        # Delta entre pendiente actual y pendiente anterior (shift)
+        df[f"delta_slope_shift_{col}_{ventana_corta}"] = (
+            df.groupby("numero_de_cliente")[col_slope_corta].shift(ventana_corta)
+        )
+        df[f"delta_slope_shift_{col}_{ventana_corta}"] = (
+            df[col_slope_corta] - df[f"delta_slope_shift_{col}_{ventana_corta}"]
+        )
+
+        # Delta entre pendiente corta y larga
+        df[f"delta_slope_vs_{ventana_larga}_{col}"] = (
+            df[col_slope_corta] - df[col_slope_larga]
+        )
+
+    return df
+
+
+
+def feature_engineering_delta_max(df: pd.DataFrame, columnas: list[str], ventana: int = 3) -> pd.DataFrame:
+    """
+    Genera variables de delta entre el valor actual y el máximo de los últimos 'ventana' meses.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame con los datos
+    columnas : list[str]
+        Lista de atributos para los cuales generar deltas
+    ventana : int
+        Tamaño de la ventana móvil
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame con columnas nuevas '<col>_delta_max_<ventana>'
+    """
+    import duckdb
+
+    logger.info(f"Calculando delta contra máximo en ventana de {ventana} meses para {len(columnas)} atributos")
+
+    if not columnas:
+        logger.warning("No se especificaron atributos para delta máximo")
+        return df
+
+    con = duckdb.connect(database=":memory:")
+    con.register("df", df)
+
+    columnas_sql = ", ".join(df.columns)
+    sql = f"SELECT {columnas_sql}"
+
+    for col in columnas:
+        if col in df.columns:
+            sql += f""",
+                {col} - MAX({col}) OVER (
+                    PARTITION BY numero_de_cliente
+                    ORDER BY foto_mes
+                    ROWS BETWEEN {ventana - 1} PRECEDING AND CURRENT ROW
+                ) AS {col}_delta_max_{ventana}
+            """
+        else:
+            logger.warning(f"Columna {col} no encontrada en df")
+
+    sql += " FROM df"
+    logger.debug(f"Consulta SQL delta_max: {sql[:500]}...")
+
+    df_resultado = con.execute(sql).df()
+    con.close()
+
+    logger.info(f"Delta contra máximo calculado. DataFrame con {df_resultado.shape[1]} columnas")
+    return df_resultado
+
+
+
+def feature_engineering_delta_mean(df: pd.DataFrame, columnas: list[str], ventana: int = 3) -> pd.DataFrame:
+    """
+    Genera variables de delta entre el valor actual y el promedio de los últimos 'ventana' meses.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame con los datos
+    columnas : list[str]
+        Lista de atributos para los cuales generar deltas
+    ventana : int
+        Tamaño de la ventana móvil
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame con columnas nuevas '<col>_delta_mean_<ventana>'
+    """
+    import duckdb
+
+    logger.info(f"Calculando delta contra promedio en ventana de {ventana} meses para {len(columnas)} atributos")
+
+    if not columnas:
+        logger.warning("No se especificaron atributos para delta promedio")
+        return df
+
+    con = duckdb.connect(database=":memory:")
+    con.register("df", df)
+
+    columnas_sql = ", ".join(df.columns)
+    sql = f"SELECT {columnas_sql}"
+
+    for col in columnas:
+        if col in df.columns:
+            sql += f""",
+                {col} - AVG({col}) OVER (
+                    PARTITION BY numero_de_cliente
+                    ORDER BY foto_mes
+                    ROWS BETWEEN {ventana - 1} PRECEDING AND CURRENT ROW
+                ) AS {col}_delta_mean_{ventana}
+            """
+        else:
+            logger.warning(f"Columna {col} no encontrada en df")
+
+    sql += " FROM df"
+    logger.debug(f"Consulta SQL delta_mean: {sql[:500]}...")
+
+    df_resultado = con.execute(sql).df()
+    con.close()
+
+    logger.info(f"Delta contra promedio calculado. DataFrame con {df_resultado.shape[1]} columnas")
+    return df_resultado
