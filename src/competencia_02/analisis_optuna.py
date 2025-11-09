@@ -1,4 +1,4 @@
-    from config import *
+from config import *
 
 def analizar_resultados_optuna():
     import optuna
