@@ -1,5 +1,5 @@
 #yaml
-STUDY_NAME: Pruebo mejores params - Undersampling 0.03 para comparar con lo previo
+STUDY_NAME: Pruebo otras historicas - Undersampling 0.03 para comparar con lo previo
 competencia01:
   BUCKET_NAME: ../../../buckets/b1/Compe_02
   COSTO_ESTIMULO: 20000
