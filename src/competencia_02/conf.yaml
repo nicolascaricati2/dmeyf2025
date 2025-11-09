@@ -1,10 +1,10 @@
 #yaml
-STUDY_NAME: Pruebo otras historicas - Undersampling 0.03 para comparar con lo previo
+STUDY_NAME: Testeo en Kaggle
 competencia01:
   BUCKET_NAME: ../../../buckets/b1/Compe_02
   COSTO_ESTIMULO: 20000
   DATA_PATH: ../../../datasets/competencia_02_crudo.csv.gz
-  UNDERSAMPLING: 0.03
+  UNDERSAMPLING: 1
   UNDERSAMPLING_MODELO_FINAL: 1  
   FINAL_PREDIC: 202106
   FINAL_TRAIN:
@@ -20,8 +20,8 @@ competencia01:
   # - 201910
   - 201911
   - 201912
-  - 202001
-  - 202002
+  # - 202001
+  # - 202002
   - 202003
   - 202004
   - 202005
@@ -86,8 +86,8 @@ competencia01:
       # - 201910
       - 201911
       - 201912
-      - 202001
-      - 202002
+      # - 202001
+      # - 202002
       - 202003
       - 202004
       - 202005
@@ -114,8 +114,8 @@ competencia01:
       # - 201910
       - 201911
       - 201912
-      - 202001
-      - 202002
+      # - 202001
+      # - 202002
       - 202003
       - 202004
       - 202005
@@ -143,8 +143,8 @@ competencia01:
       # - 201910
       - 201911
       - 201912
-      - 202001
-      - 202002
+      # - 202001
+      # - 202002
       - 202003
       - 202004
       - 202005
@@ -174,8 +174,8 @@ competencia01:
   # - 201910
   - 201911
   - 201912
-  - 202001
-  - 202002
+  # - 202001
+  # - 202002
   - 202003
   - 202004
   - 202005
@@ -195,8 +195,8 @@ competencia01:
   - 556691
   - 556903
   - 557159
-  # - 557399
-  # - 557597
-  # - 557861
+  - 557399
+  - 557597
+  - 557861
   TOP_K: 11750
   UMBRAL: 0.015
