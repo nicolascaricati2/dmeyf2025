@@ -5,7 +5,7 @@ import os
 import pandas as pd
 import numpy as np
 import polars as pl
-from features import feature_engineering_lag, feature_engineering_delta, feature_engineering_regr_slope_window, feature_engineering_ratio, feature_engineering_tc_total, generar_ctrx_features, feature_engineering_cpayroll_trx_corregida, feature_engineering_mpayroll_corregida, variables_aux,feature_engineering_robust_by_month_polars,ajustar_por_ipc, detectar_grupo_excluido, detectar_variable_excluida, imputar_ceros_por_mes_anterior, generar_cambios_de_pendiente_multiples, feature_engineering_delta_max, feature_engineering_delta_mean
+from features import feature_engineering_lag, feature_engineering_delta, feature_engineering_regr_slope_window, feature_engineering_ratio, feature_engineering_tc_total, generar_ctrx_features, feature_engineering_cpayroll_trx_corregida, feature_engineering_mpayroll_corregida, variables_aux,feature_engineering_robust_by_month_polars,ajustar_por_ipc, detectar_grupo_excluido, detectar_variable_excluida, imputar_ceros_por_mes_anterior, generar_cambios_de_pendiente_multiples_fast, feature_engineering_delta_max, feature_engineering_delta_mean
 from loader import cargar_datos, convertir_clase_ternaria_a_target
 from optimization import *
 from best_params import cargar_mejores_hiperparametros
@@ -132,7 +132,7 @@ def main():
         # for i in (1,2):
         #     df_fe = feature_engineering_lag(df_fe, columnas=atributos, cant_lag=i)
 
-        df_fe = generar_cambios_de_pendiente_multiples(df_fe, columnas=columnas_para_fe_regresiones, ventana_corta=3, ventana_larga=6)
+        df_fe = generar_cambios_de_pendiente_multiples_fast(df_fe, columnas=columnas_para_fe_regresiones, ventana_corta=3, ventana_larga=6)
         # df_fe = generar_cambios_de_pendiente_multiples(df_fe, columnas=columnas_para_fe_regresiones, ventana_corta=6, ventana_larga=12)
 
         # for i in (2,3,6,8,10,12,15):
