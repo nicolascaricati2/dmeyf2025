@@ -182,7 +182,7 @@ def objetivo_ganancia_ensamble(trial, df, undersampling=0.2) -> float:
 
     # Dividir datos en train y validación
     df_train = df[df['foto_mes'].isin(mes_train)].copy()
-    df_val = df[df['foto_mes'].isin([mes_validacion])].copy()
+    df_val = df[df['foto_mes'].isin(mes_validacion)].copy()
 
     # --- UNDERSAMPLING A NIVEL CLIENTE ---
     if isinstance(undersampling, float) and 0 < undersampling < 1:
