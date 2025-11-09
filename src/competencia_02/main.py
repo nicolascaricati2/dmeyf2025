@@ -158,7 +158,7 @@ def main():
 
     # 4. Ejecutar optimización (función simple)
     
-    study = optimizar(df_fe, n_trials=5,study_name = STUDY_NAME ,undersampling = 1.0)
+    study = optimizar(df_fe, n_trials=3,study_name = STUDY_NAME ,undersampling = 1.0)
   
     # 5. Análisis adicional
     logger.info("=== ANÁLISIS DE RESULTADOS ===")
