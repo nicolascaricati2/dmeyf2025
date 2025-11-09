@@ -154,7 +154,7 @@ def main():
     
     logger.info("⏳ CSV cargado o creado, ahora ejecutando optimización...")
 
-    4. Ejecutar optimización (función simple)
+    # 4. Ejecutar optimización (función simple)
     
     study = optimizar(df_fe, n_trials=50,study_name = STUDY_NAME ,undersampling = 1.0)
   
