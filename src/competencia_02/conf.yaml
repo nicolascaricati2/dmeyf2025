@@ -1,11 +1,11 @@
 #yaml
-STUDY_NAME: Test Optimizacion V4
+STUDY_NAME: Optimizacion Sabado 911
 competencia01:
   BUCKET_NAME: ../../../buckets/b1/Compe_02
   COSTO_ESTIMULO: 20000
   DATA_PATH: ../../../datasets/competencia_02_crudo.csv.gz
-  UNDERSAMPLING: 0.03
-  UNDERSAMPLING_MODELO_FINAL: 0.5  
+  UNDERSAMPLING: 0.2
+  UNDERSAMPLING_MODELO_FINAL: 1  
   FINAL_PREDIC: 202106
   FINAL_TRAIN:
   - 201901
@@ -47,14 +47,14 @@ competencia01:
       max: 1.0
       min: 0.25
       type: float
-    # lambda_l1:
-    #   max: 5.0
-    #   min: 0.0
-    #   type: float
-    # lambda_l2:
-    #   max: 5.0
-    #   min: 0.0
-    #   type: float
+    lambda_l1:
+      max: 5.0
+      min: 0.0
+      type: float
+    lambda_l2:
+      max: 5.0
+      min: 0.0
+      type: float
     learning_rate:
       max: 0.1
       min: 0.005
@@ -190,11 +190,11 @@ competencia01:
   SEMILLA:
   - 555557
   - 555871
-  # - 556219
-  # - 556459
-  # - 556691
-  # - 556903
-  # - 557159
+  - 556219
+  - 556459
+  - 556691
+  - 556903
+  - 557159
   # - 557399
   # - 557597
   # - 557861
