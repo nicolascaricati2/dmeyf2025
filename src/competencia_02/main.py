@@ -53,6 +53,8 @@ logger.info(f"COSTO_ESTIMULO: {COSTO_ESTIMULO}")
 logger.info(f"UMBRAL: {UMBRAL}")
 logger.info(f"HIPERPARAMETROS: {HYPERPARAM_RANGES}")
 logger.info(f"UNDERSAMPLING: {UNDERSAMPLING}")
+logger.info(f"UNDERSAMPLING_MODELO_FINAL: {UNDERSAMPLING_MODELO_FINAL}")
+
 
 
 
@@ -84,7 +86,6 @@ def main():
         #     logger.info(f"📉 Variable individual '{variable_excluida}' excluida del dataset.")
 
         # 1. Undersampling
-
         df_fe = convertir_clase_ternaria_a_target(df)
         df_fe = df_fe[df_fe["target"].notnull()].copy()
         df_fe = undersample_clientes(df_fe, UNDERSAMPLING, 555557)
@@ -94,10 +95,8 @@ def main():
 
     
         # 2. Feature Engineering
-
         # Excluyo meses problematicos
         meses_excluir = [201904, 201905, 201910, 202006]
-        # meses_excluir = [202006]
         df_fe = df_fe[~df_fe["foto_mes"].isin(meses_excluir)].copy()
         logger.info(f"Después de excluir meses problemáticos: {df_fe.shape}")
 
@@ -130,10 +129,10 @@ def main():
         df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})
         # for i in (1,2):
         #     df_fe = feature_engineering_lag(df_fe, columnas=atributos, cant_lag=i)
-        for i in (2,3,6,12,18,24,30):
+        for i in (2,3,6,8,10,12,15):
             df_fe = feature_engineering_regr_slope_window(df_fe, columnas=columnas_para_fe_regresiones, ventana = i)
             df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})
-        for i in (2,3,4):
+        for i in (2,3,4,6,8,12,15):
             df_fe = feature_engineering_delta(df_fe, columnas=columnas_para_fe_deltas, cant_delta = i)
             df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})       
 
@@ -143,32 +142,6 @@ def main():
     
         # df_fe = df_fe.drop(columns=variables_con_drfting, errors='ignore')
 
-        # Pruebo con variables de fintches
-
-        # Importar el archivo con tasas y penetración
-        fintechs_df = pd.read_csv("../../../buckets/b1/Compe_02/data/tasa_y_penetracion_mensual_argentina_2018_2025.csv")
-        
-        # Limpiar nombres de columnas
-        fintechs_df.columns = fintechs_df.columns.str.strip()
-        
-        # Renombrar columnas para facilitar el merge y evitar símbolos
-        fintechs_df = fintechs_df.rename(columns={
-            'Fecha en formato foto_mes': 'foto_mes',
-            'Tasa_interes_money_market_TNA_estimada_%': 'tasa_interes_mm_tna',
-            'Penetracion_billeteras_%': 'penetracion_billeteras'
-        })
-        
-        # Asegurar tipo de dato consistente con df_fe
-        fintechs_df['foto_mes'] = fintechs_df['foto_mes'].astype(int)
-        
-        # Merge (left join) para agregar las variables a cada registro de df_fe según su foto_mes
-        df_fe = df_fe.merge(
-            fintechs_df[['foto_mes', 'tasa_interes_mm_tna', 'penetracion_billeteras']],
-            on='foto_mes',
-            how='left'
-        )
-        
-        logger.info("Se agregaron variables macroeconómicas (tasa_interes_mm_tna, penetracion_billeteras) según foto_mes.")
 
         
         logger.info(f"Feature Engineering completado: {df_fe.shape}")
@@ -181,46 +154,45 @@ def main():
     
     logger.info("⏳ CSV cargado o creado, ahora ejecutando optimización...")
 
-    # 4. Ejecutar optimización (función simple)
+    4. Ejecutar optimización (función simple)
     
-    # study = optimizar(df_fe, n_trials=50,study_name = STUDY_NAME ,undersampling = 0.2)
+    study = optimizar(df_fe, n_trials=50,study_name = STUDY_NAME ,undersampling = 1.0)
   
-    # # 5. Análisis adicional
-    # logger.info("=== ANÁLISIS DE RESULTADOS ===")
+    # 5. Análisis adicional
+    logger.info("=== ANÁLISIS DE RESULTADOS ===")
     
-    # trials_df = study.trials_dataframe()
+    trials_df = study.trials_dataframe()
     
-    # if trials_df is not None and len(trials_df) > 0:
-    #     # Ordenar por valor (mayor ganancia)
-    #     top_5 = trials_df.nlargest(5, 'value')
-    #     logger.info("Top 5 mejores trials:")
+    if trials_df is not None and len(trials_df) > 0:
+        # Ordenar por valor (mayor ganancia)
+        top_5 = trials_df.nlargest(5, 'value')
+        logger.info("Top 5 mejores trials:")
     
-    #     for idx, trial in top_5.iterrows():
-    #         # Extraer parámetros (columnas que empiezan con 'params_')
-    #         params_cols = [c for c in trial.index if c.startswith('params_')]
-    #         if params_cols:
-    #             params = {col.replace('params_', ''): trial[col] for col in params_cols}
-    #         else:
-    #             params = {}
+        for idx, trial in top_5.iterrows():
+            # Extraer parámetros (columnas que empiezan con 'params_')
+            params_cols = [c for c in trial.index if c.startswith('params_')]
+            if params_cols:
+                params = {col.replace('params_', ''): trial[col] for col in params_cols}
+            else:
+                params = {}
     
-    #         logger.info(
-    #             f"Trial {int(trial['number'])}: "
-    #             f"Ganancia = {trial['value']:,.0f} | "
-    #             f"Parámetros: {params}"
-    #         )
-    # else:
-    #     logger.warning("No se encontraron trials para analizar.")
+            logger.info(
+                f"Trial {int(trial['number'])}: "
+                f"Ganancia = {trial['value']:,.0f} | "
+                f"Parámetros: {params}"
+            )
+    else:
+        logger.warning("No se encontraron trials para analizar.")
 
-    # logger.info("=== OPTIMIZACIÓN COMPLETADA ===")
+    logger.info("=== OPTIMIZACIÓN COMPLETADA ===")
 
     #  05 Test en mes desconocido
 
     # Cargar mejores hiperparámetros
 
-    # mejores_params = cargar_mejores_hiperparametros()
+    mejores_params = cargar_mejores_hiperparametros()
 
-    # mejores_params = {'num_leaves': 169, 'learning_rate': 0.01653493811854045, 'min_data_in_leaf': 666, 'feature_fraction': 0.22865878320049338, 'bagging_fraction': 0.7317466615048293, 'num_boost_round': 682}
-    mejores_params = {'bagging_fraction': 0.9366158838759591, 'feature_fraction': 0.6097465146850822, 'lambda_l1': 1.8715916172393408, 'lambda_l2': 0.47499514072885834, 'learning_rate': 0.03421069355219755, 'min_data_in_leaf': 19, 'num_boost_round': 1562, 'num_leaves': 151}
+    # mejores_params = {'bagging_fraction': 0.9366158838759591, 'feature_fraction': 0.6097465146850822, 'lambda_l1': 1.8715916172393408, 'lambda_l2': 0.47499514072885834, 'learning_rate': 0.03421069355219755, 'min_data_in_leaf': 19, 'num_boost_round': 1562, 'num_leaves': 151}
 
 
     logger.info("=== EVALUACIÓN EN CONJUNTO DE TEST ===")
@@ -239,97 +211,50 @@ def main():
 
 
 
-#     # Ejecutar comparación y graficar
-#     resultados_grafico = comparar_semillas_en_grafico_con_ensamble(
-#     df_fe=df_fe,
-#     mejores_params=mejores_params,
-#     semillas=SEMILLA,
-#     study_name=STUDY_NAME,
-#     nombre_archivo=nombre_archivo
-# )
+    # Ejecutar comparación y graficar
+    resultados_grafico = comparar_semillas_en_grafico_con_ensamble(
+    df_fe=df_fe,
+    mejores_params=mejores_params,
+    semillas=SEMILLA,
+    study_name=STUDY_NAME,
+    nombre_archivo=nombre_archivo
+)
     
-    # # Mostrar resumen del ensamble total
-    # res = resultados_grafico["resultados_ensamble"]
-    # logger.info("=== RESUMEN DE EVALUACIÓN EN TEST (ENSAMBLE TOTAL) ===")
-    # logger.info(f"✅ Ganancia en test: {res['ganancia_test']:,.0f}")
-    # logger.info(f"🎯 Predicciones positivas: {res['predicciones_positivas']:,} ({res['porcentaje_positivas']:.2f}%)")
+    # Mostrar resumen del ensamble total
+    res = resultados_grafico["resultados_ensamble"]
+    logger.info("=== RESUMEN DE EVALUACIÓN EN TEST (ENSAMBLE TOTAL) ===")
+    logger.info(f"✅ Ganancia en test: {res['ganancia_test']:,.0f}")
+    logger.info(f"🎯 Predicciones positivas: {res['predicciones_positivas']:,} ({res['porcentaje_positivas']:.2f}%)")
 
 
     #06 Entrenar modelo final
     logger.info("=== ENTRENAMIENTO FINAL ===")
     logger.info("Preparar datos para entrenamiento final")
-    # df = cargar_datos(DATA_PATH)
-    # logger.info(f"Datos cargados: {df.shape}")
-        
-    # df_fe = convertir_clase_ternaria_a_target(df)
-    # df_fe = df_fe[df_fe["target"].notnull()].copy()
-
-    
-    # # 2. Feature Engineering
-    # # Excluyo Comisiones Otras 
-    # df_fe = df_fe.drop(columns=['ccomisiones_otras'])
-    
-    # # Excluyo las variables no corregidas
-    # cols_ajustar_ipc = [
-    #     c for c in df_fe.columns
-    #     if c.startswith(('m', 'Visa_m', 'Master_m')) and 'dolares' not in c
-    # ]
-    # df_fe = ajustar_por_ipc(df_fe, cols_ajustar_ipc, columna_mes='foto_mes')
-    # df_fe = feature_engineering_tc_total(df_fe)
-    # df_fe = variables_aux(df_fe)
-    # columnas_a_excluir = ["foto_mes","cliente_edad","numero_de_cliente","target","target_to_calculate_gan"]
-    # columnas_para_fe_regresiones = [
-    #     c for c in df_fe.columns
-    #     if c.startswith(('m', 'Visa_m', 'Master_m')) 
-    #     and c not in columnas_a_excluir
-    # ]
-    
-    # columnas_para_fe_deltas = [
-    #     c for c in df_fe.columns
-    #     if c.startswith(('c', 'Visa_c', 'Master_c')) 
-    #     and c not in columnas_a_excluir
-    # ]
-    # df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})
-    # # for i in (1,2):
-    # #     df_fe = feature_engineering_lag(df_fe, columnas=atributos, cant_lag=i)
-    # for i in (2,3,6,12):
-    #     df_fe = feature_engineering_regr_slope_window(df_fe, columnas=columnas_para_fe_regresiones, ventana = i)
-    #     df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})
-    # for i in (2,3,4):
-    #     df_fe = feature_engineering_delta(df_fe, columnas=columnas_para_fe_deltas, cant_delta = i)
-    #     df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})
-
-    
-    
-    #     # variables_con_drfting =["Visa_Finiciomora","Master_fultimo_cierre","Visa_fultimo_cierre","Master_Finiciomora","cpayroll_trx","mpayroll"]
-    
-    #     # df_fe = df_fe.drop(columns=variables_con_drfting, errors='ignore')
-    # X_train, y_train, X_predict, clientes_predict = preparar_datos_entrenamiento_final(df_fe)
   
-    # # Entrenar modelo final
-    # logger.info("Entrenar modelo final")
-    # _ , modelo_final = entrenar_modelo_final_undersampling(X_train, y_train, X_predict ,mejores_params, SEMILLA, ratio_undersampling = UNDERSAMPLING)
+    # Entrenar modelo final
+    logger.info("Entrenar modelo final")
+    _ , modelo_final = entrenar_modelo_final_undersampling(X_train, y_train, X_predict ,mejores_params, SEMILLA, ratio_undersampling = UNDERSAMPLING_MODELO_FINAL)
 
   
-    # # Generar predicciones finales
-    # logger.info("Generar predicciones finales")
-    # resultados = generar_predicciones_finales(modelo_final, X_predict, clientes_predict, umbral=UMBRAL, top_k=TOP_K)
+    # Generar predicciones finales
+    logger.info("Generar predicciones finales")
+    resultados = generar_predicciones_finales(modelo_final, X_predict, clientes_predict, umbral=UMBRAL, top_k=TOP_K)
   
-    # # Guardar predicciones
-    # logger.info("Guardar predicciones")
-    # archivo_salida = guardar_predicciones_finales(resultados)
+    # Guardar predicciones
+    logger.info("Guardar predicciones")
+    archivo_salida = guardar_predicciones_finales(resultados)
   
-    # Resumen final
-    # logger.info("=== RESUMEN FINAL ===")
-    # logger.info(f"Entrenamiento final completado exitosamente")
-    # logger.info(f"Mejores hiperparámetros utilizados: {mejores_params}")
-    # logger.info(f"Períodos de entrenamiento: {FINAL_TRAIN}")
-    # logger.info(f"Período de predicción: {FINAL_PREDIC}")
-    # logger.info(f"Archivo de salida: {archivo_salida}")
-    # logger.info(f"Log detallado: logs/{nombre_log}")
+    Resumen final
+    logger.info("=== RESUMEN FINAL ===")
+    logger.info(f"Entrenamiento final completado exitosamente")
+    logger.info(f"Mejores hiperparámetros utilizados: {mejores_params}")
+    logger.info(f"Períodos de entrenamiento: {FINAL_TRAIN}")
+    logger.info(f"Período de predicción: {FINAL_PREDIC}")
+    logger.info(f"Archivo de salida: {archivo_salida}")
+    logger.info(f"Log detallado: logs/{nombre_log}")
 
 
-    # logger.info(f">>> Ejecución finalizada. Revisar logs para mas detalles.")
+    logger.info(f">>> Ejecución finalizada. Revisar logs para mas detalles.")
 
 if __name__ == "__main__":
     main()
@@ -449,4 +374,42 @@ if __name__ == "__main__":
         # df_fe = df_fe.drop(columns=[c for c in features_a_excluir if c in df_fe.columns], errors='ignore')
         
         # logger.info(f"Se excluyeron {len(features_a_excluir)} variables con importance_split < 10")
+
+
+
+
+
+
+
+        # # Pruebo con variables de fintches
+
+        # # Importar el archivo con tasas y penetración
+        # fintechs_df = pd.read_csv("../../../buckets/b1/Compe_02/data/tasa_y_penetracion_mensual_argentina_2018_2025.csv")
+        
+        # # Limpiar nombres de columnas
+        # fintechs_df.columns = fintechs_df.columns.str.strip()
+        
+        # # Renombrar columnas para facilitar el merge y evitar símbolos
+        # fintechs_df = fintechs_df.rename(columns={
+        #     'Fecha en formato foto_mes': 'foto_mes',
+        #     'Tasa_interes_money_market_TNA_estimada_%': 'tasa_interes_mm_tna',
+        #     'Penetracion_billeteras_%': 'penetracion_billeteras'
+        # })
+        
+        # # Asegurar tipo de dato consistente con df_fe
+        # fintechs_df['foto_mes'] = fintechs_df['foto_mes'].astype(int)
+        
+        # # Merge (left join) para agregar las variables a cada registro de df_fe según su foto_mes
+        # df_fe = df_fe.merge(
+        #     fintechs_df[['foto_mes', 'tasa_interes_mm_tna', 'penetracion_billeteras']],
+        #     on='foto_mes',
+        #     how='left'
+        # )
+        
+        # logger.info("Se agregaron variables macroeconómicas (tasa_interes_mm_tna, penetracion_billeteras) según foto_mes.")
+
+
+
+    # mejores_params = {'num_leaves': 169, 'learning_rate': 0.01653493811854045, 'min_data_in_leaf': 666, 'feature_fraction': 0.22865878320049338, 'bagging_fraction': 0.7317466615048293, 'num_boost_round': 682}
+
 
