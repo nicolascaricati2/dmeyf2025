@@ -96,8 +96,8 @@ def main():
         # 2. Feature Engineering
 
         # Excluyo meses problematicos
-        # meses_excluir = [201904, 201905, 201910, 202006]
-        meses_excluir = [202006]
+        meses_excluir = [201904, 201905, 201910, 202006]
+        # meses_excluir = [202006]
         df_fe = df_fe[~df_fe["foto_mes"].isin(meses_excluir)].copy()
         logger.info(f"Después de excluir meses problemáticos: {df_fe.shape}")
 
@@ -142,7 +142,56 @@ def main():
         # variables_con_drfting =["Visa_Finiciomora","Master_fultimo_cierre","Visa_fultimo_cierre","Master_Finiciomora","cpayroll_trx","mpayroll"]
     
         # df_fe = df_fe.drop(columns=variables_con_drfting, errors='ignore')
+
+        # Excluyo variables con baja importancia
+        importance_df = pd.read_csv("../../../buckets/b1/Compe_02/data/feature_importance_to_remove_variables.csv")
         
+        # Limpiar nombres de columnas por si hay espacios
+        importance_df.columns = importance_df.columns.str.strip()
+        
+        # Limpiar y convertir la columna 'importance_split' a numérica
+        importance_df['importance_split'] = (
+            importance_df['importance_split']
+            .astype(str)
+            .str.replace(',', '.', regex=False)
+            .astype(float)
+        )
+
+        # Identificar las variables con importance_split < 10
+        features_a_excluir = importance_df.loc[importance_df['importance_split'] < 10, 'feature'].tolist()
+        
+        # Excluir esas columnas de df_fe (solo si existen)
+        df_fe = df_fe.drop(columns=[c for c in features_a_excluir if c in df_fe.columns], errors='ignore')
+        
+        logger.info(f"Se excluyeron {len(features_a_excluir)} variables con importance_split < 10")
+
+        # # Pruebo con variables de fintches
+
+        # # Importar el archivo con tasas y penetración
+        # fintechs_df = pd.read_csv("../../../buckets/b1/Compe_02/data/tasa_y_penetracion_mensual_argentina_2018_2025.csv")
+        
+        # # Limpiar nombres de columnas
+        # fintechs_df.columns = fintechs_df.columns.str.strip()
+        
+        # # Renombrar columnas para facilitar el merge y evitar símbolos
+        # fintechs_df = fintechs_df.rename(columns={
+        #     'Fecha en formato foto_mes': 'foto_mes',
+        #     'Tasa_interes_money_market_TNA_estimada_%': 'tasa_interes_mm_tna',
+        #     'Penetracion_billeteras_%': 'penetracion_billeteras'
+        # })
+        
+        # # Asegurar tipo de dato consistente con df_fe
+        # fintechs_df['foto_mes'] = fintechs_df['foto_mes'].astype(int)
+        
+        # # Merge (left join) para agregar las variables a cada registro de df_fe según su foto_mes
+        # df_fe = df_fe.merge(
+        #     fintechs_df[['foto_mes', 'tasa_interes_mm_tna', 'penetracion_billeteras']],
+        #     on='foto_mes',
+        #     how='left'
+        # )
+        
+        # logger.info("Se agregaron variables macroeconómicas (tasa_interes_mm_tna, penetracion_billeteras) según foto_mes.")
+
         
         logger.info(f"Feature Engineering completado: {df_fe.shape}")
         
