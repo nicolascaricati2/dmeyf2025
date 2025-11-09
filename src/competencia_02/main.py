@@ -89,9 +89,9 @@ def main():
 
         # 1. Undersampling
         df_fe = convertir_clase_ternaria_a_target(df)
-        # df_fe = df_fe[df_fe["target"].notnull()].copy()
-        # df_fe = undersample_clientes(df_fe, UNDERSAMPLING, 555557)
-        # logger.info(f"Después de undersampling: {df_fe.shape}")
+        df_fe = df_fe[df_fe["target"].notnull()].copy()
+        df_fe = undersample_clientes(df_fe, UNDERSAMPLING, 555557)
+        logger.info(f"Después de undersampling: {df_fe.shape}")
 
 
 
@@ -202,12 +202,12 @@ def main():
 
     logger.info("=== EVALUACIÓN EN CONJUNTO DE TEST ===")
 
-    df_fe_under = undersample_clientes(df_fe, UNDERSAMPLING, 555557)
-    df_fe_under = df_fe_under.select_dtypes(include=["number", "bool"]).copy()
+    # df_fe_under = undersample_clientes(df_fe, UNDERSAMPLING, 555557)
+    # df_fe_under = df_fe_under.select_dtypes(include=["number", "bool"]).copy()
     
     # Evaluación multimes
     evaluar_meses_test(
-        df_fe=df_fe_under,
+        df_fe=df_fe,
         mejores_params=mejores_params,
         semillas=SEMILLA,
         study_name=STUDY_NAME,
