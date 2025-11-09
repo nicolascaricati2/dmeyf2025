@@ -296,18 +296,25 @@ def objetivo_ganancia_ensamble(trial, df, undersampling=0.2) -> float:
 
     # Promediar predicciones
     y_pred_proba_prom = preds_acumuladas / len(SEMILLA)
-    y_pred_binary = (y_pred_proba_prom > UMBRAL).astype(int)
+
 
     # Calcular ganancia final del ensamble
-    ganancia_total = ganancia_evaluator(y_val, y_pred_binary)
+    ganancia_total = ganancia_evaluator(y_pred_proba_prom, y_val)
+
+    # Normalizar por cantidad de meses usados
+    n_meses_train = len(set(MES_TRAIN))
+    n_meses_valid = len(set(MES_VALIDACION))  # o len(MES_VALIDACION) si usás más de uno
+    ganancia_normalizada = ganancia_total / (n_meses_train + n_meses_valid)
+    
+
 
     # Guardar en JSON y loggear
-    guardar_iteracion(trial, ganancia_total)
+    guardar_iteracion(trial, ganancia_normalizada)
     logger.debug(
-        f"Trial {trial.number}: Ganancia (ensamble) = {ganancia_total:,.0f}"
+        f"Trial {trial.number}: Ganancia (ensamble) = {ganancia_normalizada:,.0f}"
     )
 
-    return ganancia_total
+    return ganancia_normalizada
 
 
 
