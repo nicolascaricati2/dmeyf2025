@@ -1,4 +1,4 @@
-STUDY_NAME: Test sacando variables con fe gain <10
+STUDY_NAME: Test con Vars Fintech
 competencia01:
   BUCKET_NAME: ../../../buckets/b1/Compe_02
   COSTO_ESTIMULO: 20000
