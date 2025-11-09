@@ -1,10 +1,10 @@
 #yaml
-STUDY_NAME: Optimizo con el mejor Set Up 
+STUDY_NAME: Test Optimizacion
 competencia01:
   BUCKET_NAME: ../../../buckets/b1/Compe_02
   COSTO_ESTIMULO: 20000
   DATA_PATH: ../../../datasets/competencia_02_crudo.csv.gz
-  UNDERSAMPLING: 0.2
+  UNDERSAMPLING: 0.03
   UNDERSAMPLING_MODELO_FINAL: 0.5  
   FINAL_PREDIC: 202106
   FINAL_TRAIN:
@@ -160,10 +160,6 @@ competencia01:
       - 202103
       - 202104
   MESES_OPTIMIZACION:
-  - 2021
-  - 202102
-  - 202103
-  - 202104
   MES_TEST: 202104
   MES_TRAIN:
   - 201901
@@ -190,16 +186,15 @@ competencia01:
   - 202010
   - 202011
   - 202012
-  - 202101
-  MES_VALIDACION: 202103
+  MES_VALIDACION: [2,202103,202104]
   SEMILLA:
   - 555557
   - 555871
-  - 556219
-  - 556459
-  - 556691
-  - 556903
-  - 557159
+  # - 556219
+  # - 556459
+  # - 556691
+  # - 556903
+  # - 557159
   # - 557399
   # - 557597
   # - 557861

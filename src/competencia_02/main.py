@@ -19,6 +19,9 @@ import re
 from evaluar_meses_test import evaluar_meses_test
 from snapshot import *
 from undersampling import undersample_clientes
+from analisis_optuna import analizar_resultados_optuna
+
+
 
 ### Configuración de logging ###
 fecha = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -156,10 +159,12 @@ def main():
 
     # 4. Ejecutar optimización (función simple)
     
-    study = optimizar(df_fe, n_trials=50,study_name = STUDY_NAME ,undersampling = 1.0)
+    study = optimizar(df_fe, n_trials=5,study_name = STUDY_NAME ,undersampling = 1.0)
   
     # 5. Análisis adicional
     logger.info("=== ANÁLISIS DE RESULTADOS ===")
+
+    analizar_resultados_optuna()
     
     trials_df = study.trials_dataframe()
     
