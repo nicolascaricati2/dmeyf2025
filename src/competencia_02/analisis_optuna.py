@@ -1,3 +1,5 @@
+    from config import *
+
 def analizar_resultados_optuna():
     import optuna
     import matplotlib.pyplot as plt
@@ -5,7 +7,6 @@ def analizar_resultados_optuna():
     import pandas as pd
     import json
     import os
-    from config import *
 
     archivo_base = STUDY_NAME
 
