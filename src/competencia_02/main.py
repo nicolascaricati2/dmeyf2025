@@ -89,9 +89,9 @@ def main():
 
         # 1. Undersampling
         df_fe = convertir_clase_ternaria_a_target(df)
-        df_fe = df_fe[df_fe["target"].notnull()].copy()
-        df_fe = undersample_clientes(df_fe, UNDERSAMPLING, 555557)
-        logger.info(f"Después de undersampling: {df_fe.shape}")
+        # df_fe = df_fe[df_fe["target"].notnull()].copy()
+        # df_fe = undersample_clientes(df_fe, UNDERSAMPLING, 555557)
+        # logger.info(f"Después de undersampling: {df_fe.shape}")
 
 
 
@@ -158,35 +158,35 @@ def main():
 
     # 4. Ejecutar optimización (función simple)
     
-    study = optimizar(df_fe, n_trials=60,study_name = STUDY_NAME ,undersampling = 1.0)
+    # study = optimizar(df_fe, n_trials=60,study_name = STUDY_NAME ,undersampling = 1.0)
   
-    # 5. Análisis adicional
-    logger.info("=== ANÁLISIS DE RESULTADOS ===")
+    # # 5. Análisis adicional
+    # logger.info("=== ANÁLISIS DE RESULTADOS ===")
 
-    analizar_resultados_optuna()
+    # analizar_resultados_optuna()
     
-    trials_df = study.trials_dataframe()
+    # trials_df = study.trials_dataframe()
     
-    if trials_df is not None and len(trials_df) > 0:
-        # Ordenar por valor (mayor ganancia)
-        top_5 = trials_df.nlargest(5, 'value')
-        logger.info("Top 5 mejores trials:")
+    # if trials_df is not None and len(trials_df) > 0:
+    #     # Ordenar por valor (mayor ganancia)
+    #     top_5 = trials_df.nlargest(5, 'value')
+    #     logger.info("Top 5 mejores trials:")
     
-        for idx, trial in top_5.iterrows():
-            # Extraer parámetros (columnas que empiezan con 'params_')
-            params_cols = [c for c in trial.index if c.startswith('params_')]
-            if params_cols:
-                params = {col.replace('params_', ''): trial[col] for col in params_cols}
-            else:
-                params = {}
+    #     for idx, trial in top_5.iterrows():
+    #         # Extraer parámetros (columnas que empiezan con 'params_')
+    #         params_cols = [c for c in trial.index if c.startswith('params_')]
+    #         if params_cols:
+    #             params = {col.replace('params_', ''): trial[col] for col in params_cols}
+    #         else:
+    #             params = {}
     
-            logger.info(
-                f"Trial {int(trial['number'])}: "
-                f"Ganancia = {trial['value']:,.0f} | "
-                f"Parámetros: {params}"
-            )
-    else:
-        logger.warning("No se encontraron trials para analizar.")
+    #         logger.info(
+    #             f"Trial {int(trial['number'])}: "
+    #             f"Ganancia = {trial['value']:,.0f} | "
+    #             f"Parámetros: {params}"
+    #         )
+    # else:
+    #     logger.warning("No se encontraron trials para analizar.")
 
     logger.info("=== OPTIMIZACIÓN COMPLETADA ===")
 
@@ -194,19 +194,20 @@ def main():
 
     # Cargar mejores hiperparámetros
 
-    mejores_params = cargar_mejores_hiperparametros()
+    # mejores_params = cargar_mejores_hiperparametros()
 
     # mejores_params = {'bagging_fraction': 0.9366158838759591, 'feature_fraction': 0.6097465146850822, 'lambda_l1': 1.8715916172393408, 'lambda_l2': 0.47499514072885834, 'learning_rate': 0.03421069355219755, 'min_data_in_leaf': 19, 'num_boost_round': 1562, 'num_leaves': 151}
+    mejores_params = {'bagging_fraction': 0.648239786, 'feature_fraction': 0.338110921, 'lambda_l1': 3.152084178, 'lambda_l2': 2.623895465, 'learning_rate': 0.074681467, 'min_data_in_leaf': 10, 'num_boost_round': 496, 'num_leaves': 26}    
 
 
     logger.info("=== EVALUACIÓN EN CONJUNTO DE TEST ===")
 
-    # df_fe_under = undersample_clientes(df_fe, UNDERSAMPLING, 555557)
-    # df_fe_under = df_fe_under.select_dtypes(include=["number", "bool"]).copy()
+    df_fe_under = undersample_clientes(df_fe, UNDERSAMPLING, 555557)
+    df_fe_under = df_fe_under.select_dtypes(include=["number", "bool"]).copy()
     
     # Evaluación multimes
     evaluar_meses_test(
-        df_fe=df_fe,
+        df_fe=df_fe_under,
         mejores_params=mejores_params,
         semillas=SEMILLA,
         study_name=STUDY_NAME,
@@ -214,23 +215,23 @@ def main():
     )
 
 
-    # #06 Entrenar modelo final
-    # logger.info("=== ENTRENAMIENTO FINAL ===")
-    # logger.info("Preparar datos para entrenamiento final")
-    # X_train, y_train, X_predict, clientes_predict = preparar_datos_entrenamiento_final(df_fe)
+    #06 Entrenar modelo final
+    logger.info("=== ENTRENAMIENTO FINAL ===")
+    logger.info("Preparar datos para entrenamiento final")
+    X_train, y_train, X_predict, clientes_predict = preparar_datos_entrenamiento_final(df_fe)
   
-    # # Entrenar modelo final
-    # logger.info("Entrenar modelo final")
-    # _ , modelo_final = entrenar_modelo_final_undersampling(X_train, y_train, X_predict ,mejores_params, SEMILLA, ratio_undersampling = 1)
+    # Entrenar modelo final
+    logger.info("Entrenar modelo final")
+    _ , modelo_final = entrenar_modelo_final_undersampling(X_train, y_train, X_predict ,mejores_params, SEMILLA, ratio_undersampling = 1)
 
   
-    # # Generar predicciones finales
-    # logger.info("Generar predicciones finales")
-    # resultados = generar_predicciones_finales(modelo_final, X_predict, clientes_predict, umbral=UMBRAL, top_k=TOP_K)
+    # Generar predicciones finales
+    logger.info("Generar predicciones finales")
+    resultados = generar_predicciones_finales(modelo_final, X_predict, clientes_predict, umbral=UMBRAL, top_k=TOP_K)
   
-    # # Guardar predicciones
-    # logger.info("Guardar predicciones")
-    # archivo_salida = guardar_predicciones_finales(resultados)
+    # Guardar predicciones
+    logger.info("Guardar predicciones")
+    archivo_salida = guardar_predicciones_finales(resultados)
   
     # Resumen final
     logger.info("=== RESUMEN FINAL ===")
