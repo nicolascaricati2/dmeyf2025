@@ -244,7 +244,7 @@ def main():
     logger.info("Guardar predicciones")
     archivo_salida = guardar_predicciones_finales(resultados)
   
-    Resumen final
+    # Resumen final
     logger.info("=== RESUMEN FINAL ===")
     logger.info(f"Entrenamiento final completado exitosamente")
     logger.info(f"Mejores hiperparámetros utilizados: {mejores_params}")
