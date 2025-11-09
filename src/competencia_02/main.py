@@ -220,8 +220,7 @@ def main():
     df_fe=df_fe,
     mejores_params=mejores_params,
     semillas=SEMILLA,
-    study_name=STUDY_NAME,
-    nombre_archivo=nombre_archivo
+    study_name=STUDY_NAME
 )
     
     # Mostrar resumen del ensamble total
