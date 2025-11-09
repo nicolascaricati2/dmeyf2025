@@ -647,7 +647,7 @@ def comparar_semillas_en_grafico(df_fe, mejores_params, semillas, study_name="mu
         "curva_std": curva_std,
     }
 
-def comparar_semillas_en_grafico_con_ensamble(df_fe, mejores_params, semillas, mes_test, meses_train, study_name="multi_seed", nombre_archivo=None):
+def comparar_semillas_en_grafico_con_ensamble(df_fe, mejores_params, semillas, mes_test, meses_train, study_name="multi_seed"):
 
     logger.info(f"=== Comparando {len(semillas)} semillas ===")
 
@@ -745,8 +745,7 @@ def comparar_semillas_en_grafico_con_ensamble(df_fe, mejores_params, semillas, m
     os.makedirs("resultados/plots", exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     ruta = f"resultados/plots/{study_name}_comparativo_semillas_{timestamp}.png"
-    nombre_archivo = nombre_archivo or study_name
-    ruta_2 = f"../../../buckets/b1/Compe_02/{study_name}/{nombre_archivo}_{timestamp}.png"
+    ruta_2 = f"../../../buckets/b1/Compe_02/{study_name}/{study_name}_{timestamp}.png"
     os.makedirs(os.path.dirname(ruta_2), exist_ok=True)
 
 
