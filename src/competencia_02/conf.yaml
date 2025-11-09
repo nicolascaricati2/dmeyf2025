@@ -56,8 +56,8 @@ competencia01:
     #   min: 0.0
     #   type: float
     learning_rate:
-      max: 0.4
-      min: 0.05
+      max: 0.1
+      min: 0.005
       type: float
     min_data_in_leaf:
       max: 100
@@ -186,7 +186,7 @@ competencia01:
   - 202010
   - 202011
   - 202012
-  MES_VALIDACION: [2,202103,202104]
+  MES_VALIDACION: [202102,202103,202104]
   SEMILLA:
   - 555557
   - 555871

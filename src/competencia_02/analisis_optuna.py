@@ -5,7 +5,9 @@ def analizar_resultados_optuna():
     import pandas as pd
     import json
     import os
-    from config import archivo_base
+    from config import *
+
+    archivo_base = STUDY_NAME
 
     # Cargar el estudio
     study = optuna.load_study(

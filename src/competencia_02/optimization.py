@@ -304,7 +304,7 @@ def objetivo_ganancia_ensamble(trial, df, undersampling=0.2) -> float:
     # Normalizar por cantidad de meses usados
     n_meses_train = len(set(MES_TRAIN))
     n_meses_valid = len(set(MES_VALIDACION))  # o len(MES_VALIDACION) si usás más de uno
-    ganancia_normalizada = ganancia_total / (n_meses_train + n_meses_valid)
+    ganancia_normalizada = ganancia_total / (n_meses_valid)
     
 
 
