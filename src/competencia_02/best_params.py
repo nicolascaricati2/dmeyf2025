@@ -29,9 +29,16 @@ def cargar_mejores_hiperparametros(archivo_base: str = None) -> dict:
             raise ValueError("No se encontraron iteraciones en el archivo")
   
         # Encontrar la iteración con mayor ganancia
-        mejor_iteracion = max(iteraciones, key=lambda x: x['value'])
-        mejores_params = mejor_iteracion['params']
-        mejor_ganancia = mejor_iteracion['value']
+        mejor_iteracion = max(iteraciones, key=lambda x: x['ganancia'])
+        
+        # Construir el diccionario de hiperparámetros
+        mejores_params = {
+            k: v for k, v in mejor_iteracion.items()
+            if k not in ['trial_number', 'ganancia']
+        }
+        
+        mejor_ganancia = mejor_iteracion['ganancia']
+
   
         logger.info(f"Mejores hiperparámetros cargados desde {archivo}")
         logger.info(f"Mejor ganancia encontrada: {mejor_ganancia:,.0f}")
