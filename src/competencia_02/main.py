@@ -107,11 +107,14 @@ def main():
 
         # Excluyo Comisiones Otras 
         df_fe = df_fe.drop(columns=['ccomisiones_otras','internet'])
+        
+        # Agrego Variables para controlar mejor continuidad
+        df_fe = generar_ctrx_features(df_fe)        
 
-        # Excluyo las variables no corregidas
+        # Excluyo las variables no corregidas          
         cols_ajustar_ipc = [
             c for c in df_fe.columns
-            if c.startswith(('m', 'Visa_m', 'Master_m')) and 'dolares' not in c
+            if c.startswith(('m', 'Visa_m', 'Master_m','TC_Total_m')) and 'dolares' not in c
         ]
         df_fe = ajustar_por_ipc(df_fe, cols_ajustar_ipc, columna_mes='foto_mes')
         df_fe = feature_engineering_tc_total(df_fe)
@@ -119,13 +122,13 @@ def main():
         columnas_a_excluir = ["foto_mes","cliente_edad","numero_de_cliente","target","target_to_calculate_gan"]
         columnas_para_fe_regresiones = [
             c for c in df_fe.columns
-            if c.startswith(('m', 'Visa_m', 'Master_m','TC_Total_m')) 
+            if c.startswith(('m', 'Visa_m', 'Master_m','TC_Total_m','Visa_F', Visa_f',Master_F', Master_f')) 
             and c not in columnas_a_excluir
         ]
         
         columnas_para_fe_deltas = [
             c for c in df_fe.columns
-            if c.startswith(('c', 'Visa_c', 'Master_c','Master_s','Visa_s','TC_Total_c','TC_Total_s','t' )) 
+            if c.startswith(('c', 'Visa_c', 'Master_c','Master_s','Visa_s','TC_Total_c','TC_Total_s','t','Visa_F', Visa_f',Master_F', Master_f')) 
             and c not in columnas_a_excluir
         ]
         df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})
@@ -227,42 +230,42 @@ def main():
     # )
 
 
-    # 06 Entrenar modelo final (semillerio)
-    logger.info("=== ENTRENAMIENTO FINAL ===")
-    logger.info("Preparar datos para entrenamiento final")
-    X_train, y_train, X_predict, clientes_predict = preparar_datos_entrenamiento_final(df_fe)
+    # # 06 Entrenar modelo final (semillerio)
+    # logger.info("=== ENTRENAMIENTO FINAL ===")
+    # logger.info("Preparar datos para entrenamiento final")
+    # X_train, y_train, X_predict, clientes_predict = preparar_datos_entrenamiento_final(df_fe)
   
-    # Entrenar modelo final
-    logger.info("Entrenar modelo final")
-    _ , modelo_final = entrenar_modelo_final_undersampling(X_train, y_train, X_predict ,mejores_params, SEMILLA, ratio_undersampling = 1)
+    # # Entrenar modelo final
+    # logger.info("Entrenar modelo final")
+    # _ , modelo_final = entrenar_modelo_final_undersampling(X_train, y_train, X_predict ,mejores_params, SEMILLA, ratio_undersampling = 1)
 
   
-    # Generar predicciones finales
-    logger.info("Generar predicciones finales")
-    resultados = generar_predicciones_finales(modelo_final, X_predict, clientes_predict, umbral=UMBRAL, top_k=TOP_K)
-  
-    # Guardar predicciones
-    logger.info("Guardar predicciones")
-    archivo_salida = guardar_predicciones_finales(resultados)
-
-    #06 Entrenar modelo final (distintos periodos)
-    # Preparar datos por grupo
-    # grupos_datos = preparar_datos_entrenamiento_por_grupos(df_fe, FINAL_TRAINING_GROUPS, FINAL_PREDIC)
-    
-    # # Preparar datos de predicción
-    # df_predict = df_fe[df_fe["foto_mes"] == FINAL_PREDIC]
-    # X_predict = df_predict.drop(columns=["target", "target_to_calculate_gan"])
-    # clientes_predict = df_predict["numero_de_cliente"].values
-    
-    # # Entrenar modelos por grupo y semilla
-    # modelos = entrenar_modelos_por_grupo(grupos_datos, X_predict, mejores_params, SEMILLA)
-    
     # # Generar predicciones finales
-    # resultados = generar_predicciones_finales(modelos, X_predict, clientes_predict, umbral=UMBRAL, top_k=TOP_K)
-
+    # logger.info("Generar predicciones finales")
+    # resultados = generar_predicciones_finales(modelo_final, X_predict, clientes_predict, umbral=UMBRAL, top_k=TOP_K)
+  
     # # Guardar predicciones
     # logger.info("Guardar predicciones")
     # archivo_salida = guardar_predicciones_finales(resultados)
+
+    06 Entrenar modelo final (distintos periodos)
+    Preparar datos por grupo
+    grupos_datos = preparar_datos_entrenamiento_por_grupos(df_fe, FINAL_TRAINING_GROUPS, FINAL_PREDIC)
+    
+    # Preparar datos de predicción
+    df_predict = df_fe[df_fe["foto_mes"] == FINAL_PREDIC]
+    X_predict = df_predict.drop(columns=["target", "target_to_calculate_gan"])
+    clientes_predict = df_predict["numero_de_cliente"].values
+    
+    # Entrenar modelos por grupo y semilla
+    modelos = entrenar_modelos_por_grupo(grupos_datos, X_predict, mejores_params, SEMILLA)
+    
+    # Generar predicciones finales
+    resultados = generar_predicciones_finales(modelos, X_predict, clientes_predict, umbral=UMBRAL, top_k=TOP_K)
+
+    # Guardar predicciones
+    logger.info("Guardar predicciones")
+    archivo_salida = guardar_predicciones_finales(resultados)
     
     # Resumen final
     logger.info("=== RESUMEN FINAL ===")
