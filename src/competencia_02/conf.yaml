@@ -1,5 +1,5 @@
 #yaml
-STUDY_NAME: Testeo Nuevo Ensamble V3
+STUDY_NAME: Testeo Nuevo Ensamble V4
 competencia01:
   BUCKET_NAME: ../../../buckets/b1/Compe_02
   COSTO_ESTIMULO: 20000
@@ -201,47 +201,42 @@ competencia01:
   TOP_K: 11750
   UMBRAL: 0.015
   FINAL_TRAINING_GROUPS:
-  rolling_01:
+    rolling_01:
     - 201901
     - 201902
     - 201903
     - 201906
     - 201907
     - 201908
-
-  rolling_02:
+    rolling_02:
     - 201903
     - 201906
     - 201907
     - 201908
     - 201909
     - 201911
-
-  rolling_03:
+    rolling_03:
     - 201908
     - 201909
     - 201911
     - 201912
     - 202003
     - 202004
-
-  rolling_04:
+    rolling_04:
     - 202007
     - 202008
     - 202009
     - 202010
     - 202011
     - 202012
-
-  rolling_05:
+    rolling_05:
     - 202010
     - 202011
     - 202012
     - 202101
     - 202102
     - 202103
-
-  rolling_06:
+    rolling_06:
     - 201906
     - 201907
     - 201908
@@ -249,8 +244,7 @@ competencia01:
     - 201911
     - 201912
     - 202003
-
-  rolling_07:
+    rolling_07:
     - 202003
     - 202004
     - 202005
@@ -258,83 +252,70 @@ competencia01:
     - 202008
     - 202009
     - 202010
-
-  seasonal_summer:
+    seasonal_summer:
     - 201901
     - 202001
     - 202101
-
-  seasonal_autumn:
+    seasonal_autumn:
     - 201903
     - 202003
     - 202103
-
-  seasonal_winter:
+    seasonal_winter:
     - 201906
     - 202006
     - 202007
-
-  seasonal_spring:
+    seasonal_spring:
     - 201909
     - 202009
     - 202010
-
-  seasonal_end_of_year:
+    seasonal_end_of_year:
     - 201912
     - 202012
-
-  seasonal_q1:
+    seasonal_q1:
     - 201901
     - 201902
     - 201903
     - 202001
     - 202002
     - 202003
-
-  seasonal_q2:
+    seasonal_q2:
     - 201904
     - 201905
     - 201906
     - 202004
     - 202005
-
-  mixed_recent_01:
+    mixed_recent_01:
     - 202011
     - 202012
     - 202101
     - 202102
     - 202103
     - 202104
-
-  mixed_recent_02:
+    mixed_recent_02:
     - 202007
     - 202008
     - 202009
     - 202010
     - 202011
-
-  mixed_early_01:
+    mixed_early_01:
     - 201901
     - 201902
     - 201903
     - 201906
     - 201907
-
-  mixed_early_02:
+    mixed_early_02:
     - 201908
     - 201909
     - 201911
     - 201912
     - 202003
-
-  mixed_transition:
+    mixed_transition:
     - 202003
     - 202004
     - 202005
     - 202007
     - 202008
-
-  mixed_full_year:
+    mixed_full_year:
     - 202001
     - 202003
     - 202004
