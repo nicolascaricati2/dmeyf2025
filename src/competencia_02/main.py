@@ -248,8 +248,8 @@ def main():
     # logger.info("Guardar predicciones")
     # archivo_salida = guardar_predicciones_finales(resultados)
 
-    06 Entrenar modelo final (distintos periodos)
-    Preparar datos por grupo
+    # 06 Entrenar modelo final (distintos periodos)
+    # Preparar datos por grupo
     grupos_datos = preparar_datos_entrenamiento_por_grupos(df_fe, FINAL_TRAINING_GROUPS, FINAL_PREDIC)
     
     # Preparar datos de predicción
