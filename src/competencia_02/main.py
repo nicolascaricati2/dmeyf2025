@@ -89,9 +89,9 @@ def main():
 
         # 1. Undersampling
         df_fe = convertir_clase_ternaria_a_target(df)
-        df_fe = df_fe[df_fe["target"].notnull()].copy()
-        df_fe = undersample_clientes(df_fe, UNDERSAMPLING, 555557)
-        logger.info(f"Después de undersampling: {df_fe.shape}")
+        # df_fe = df_fe[df_fe["target"].notnull()].copy()
+        # df_fe = undersample_clientes(df_fe, UNDERSAMPLING, 555557)
+        # logger.info(f"Después de undersampling: {df_fe.shape}")
 
 
 
@@ -132,22 +132,22 @@ def main():
         # for i in (1,2):
         #     df_fe = feature_engineering_lag(df_fe, columnas=atributos, cant_lag=i)
 
-        # df_fe = generar_cambios_de_pendiente_multiples_fast(df_fe, columnas=columnas_para_fe_regresiones, ventana_corta=3, ventana_larga=6)
-        # df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})  
+        df_fe = generar_cambios_de_pendiente_multiples_fast(df_fe, columnas=columnas_para_fe_regresiones, ventana_corta=3, ventana_larga=6)
+        df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})  
 
-        # # df_fe = generar_cambios_de_pendiente_multiples_fast(df_fe, columnas=columnas_para_fe_regresiones, ventana_corta=6, ventana_larga=12)
+        # df_fe = generar_cambios_de_pendiente_multiples_fast(df_fe, columnas=columnas_para_fe_regresiones, ventana_corta=6, ventana_larga=12)
 
-        # # for i in (2,3,6,8,10,12,15):
-        # #     df_fe = feature_engineering_regr_slope_window(df_fe, columnas=columnas_para_fe_regresiones, ventana = i)
-        # #     df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})
-        # for i in (2,3):
-        #     df_fe = feature_engineering_delta(df_fe, columnas=columnas_para_fe_deltas, cant_delta = i)
-        # df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})  
-        # for i in (4,8):
-        #     # df_fe = feature_engineering_delta_max(df_fe, columnas=columnas_para_fe_deltas, ventana=i)
-        #     df_fe = feature_engineering_delta_mean(df_fe, columnas=columnas_para_fe_deltas, ventana=i)
+        # for i in (2,3,6,8,10,12,15):
+        #     df_fe = feature_engineering_regr_slope_window(df_fe, columnas=columnas_para_fe_regresiones, ventana = i)
+        #     df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})
+        for i in (2,3):
+            df_fe = feature_engineering_delta(df_fe, columnas=columnas_para_fe_deltas, cant_delta = i)
+        df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})  
+        for i in (4,8):
+            # df_fe = feature_engineering_delta_max(df_fe, columnas=columnas_para_fe_deltas, ventana=i)
+            df_fe = feature_engineering_delta_mean(df_fe, columnas=columnas_para_fe_deltas, ventana=i)
         
-        # df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})  
+        df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})  
 
     
     
@@ -166,6 +166,7 @@ def main():
         )
     
     logger.info("⏳ CSV cargado o creado, ahora ejecutando optimización...")
+
 
     # 4. Ejecutar optimización (función simple)
     
@@ -211,7 +212,7 @@ def main():
     mejores_params = {'bagging_fraction': 0.648239786, 'feature_fraction': 0.338110921, 'lambda_l1': 3.152084178, 'lambda_l2': 2.623895465, 'learning_rate': 0.074681467, 'min_data_in_leaf': 10, 'num_boost_round': 496, 'num_leaves': 26}    
 
 
-    logger.info("=== EVALUACIÓN EN CONJUNTO DE TEST ===")
+    # logger.info("=== EVALUACIÓN EN CONJUNTO DE TEST ===")
 
     # df_fe_under = undersample_clientes(df_fe, UNDERSAMPLING, 555557)
     # df_fe_under = df_fe_under.select_dtypes(include=["number", "bool"]).copy()
@@ -226,7 +227,7 @@ def main():
     # )
 
 
-    #06 Entrenar modelo final
+    #06 Entrenar modelo final (semillerio)
     # logger.info("=== ENTRENAMIENTO FINAL ===")
     # logger.info("Preparar datos para entrenamiento final")
     # X_train, y_train, X_predict, clientes_predict = preparar_datos_entrenamiento_final(df_fe)
@@ -244,7 +245,7 @@ def main():
     # logger.info("Guardar predicciones")
     # archivo_salida = guardar_predicciones_finales(resultados)
 
-
+    #06 Entrenar modelo final (distintos periodos)
     # Preparar datos por grupo
     grupos_datos = preparar_datos_entrenamiento_por_grupos(df_fe, FINAL_TRAINING_GROUPS, FINAL_PREDIC)
     
