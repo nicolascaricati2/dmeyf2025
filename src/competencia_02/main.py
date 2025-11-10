@@ -212,7 +212,7 @@ def main():
     mejores_params = {'bagging_fraction': 0.648239786, 'feature_fraction': 0.338110921, 'lambda_l1': 3.152084178, 'lambda_l2': 2.623895465, 'learning_rate': 0.074681467, 'min_data_in_leaf': 10, 'num_boost_round': 496, 'num_leaves': 26}    
 
 
-    # logger.info("=== EVALUACIÓN EN CONJUNTO DE TEST ===")
+    logger.info("=== EVALUACIÓN EN CONJUNTO DE TEST ===")
 
     # df_fe_under = undersample_clientes(df_fe, UNDERSAMPLING, 555557)
     # df_fe_under = df_fe_under.select_dtypes(include=["number", "bool"]).copy()
@@ -227,42 +227,42 @@ def main():
     # )
 
 
-    #06 Entrenar modelo final (semillerio)
-    # logger.info("=== ENTRENAMIENTO FINAL ===")
-    # logger.info("Preparar datos para entrenamiento final")
-    # X_train, y_train, X_predict, clientes_predict = preparar_datos_entrenamiento_final(df_fe)
+    06 Entrenar modelo final (semillerio)
+    logger.info("=== ENTRENAMIENTO FINAL ===")
+    logger.info("Preparar datos para entrenamiento final")
+    X_train, y_train, X_predict, clientes_predict = preparar_datos_entrenamiento_final(df_fe)
   
-    # # Entrenar modelo final
-    # logger.info("Entrenar modelo final")
-    # _ , modelo_final = entrenar_modelo_final_undersampling(X_train, y_train, X_predict ,mejores_params, SEMILLA, ratio_undersampling = 1)
+    # Entrenar modelo final
+    logger.info("Entrenar modelo final")
+    _ , modelo_final = entrenar_modelo_final_undersampling(X_train, y_train, X_predict ,mejores_params, SEMILLA, ratio_undersampling = 1)
 
   
-    # # Generar predicciones finales
-    # logger.info("Generar predicciones finales")
-    # resultados = generar_predicciones_finales(modelo_final, X_predict, clientes_predict, umbral=UMBRAL, top_k=TOP_K)
-  
-    # # Guardar predicciones
-    # logger.info("Guardar predicciones")
-    # archivo_salida = guardar_predicciones_finales(resultados)
-
-    #06 Entrenar modelo final (distintos periodos)
-    # Preparar datos por grupo
-    grupos_datos = preparar_datos_entrenamiento_por_grupos(df_fe, FINAL_TRAINING_GROUPS, FINAL_PREDIC)
-    
-    # Preparar datos de predicción
-    df_predict = df_fe[df_fe["foto_mes"] == FINAL_PREDIC]
-    X_predict = df_predict.drop(columns=["target", "target_to_calculate_gan"])
-    clientes_predict = df_predict["numero_de_cliente"].values
-    
-    # Entrenar modelos por grupo y semilla
-    modelos = entrenar_modelos_por_grupo(grupos_datos, X_predict, mejores_params, SEMILLA)
-    
     # Generar predicciones finales
-    resultados = generar_predicciones_finales(modelos, X_predict, clientes_predict, umbral=UMBRAL, top_k=TOP_K)
-
+    logger.info("Generar predicciones finales")
+    resultados = generar_predicciones_finales(modelo_final, X_predict, clientes_predict, umbral=UMBRAL, top_k=TOP_K)
+  
     # Guardar predicciones
     logger.info("Guardar predicciones")
     archivo_salida = guardar_predicciones_finales(resultados)
+
+    #06 Entrenar modelo final (distintos periodos)
+    # Preparar datos por grupo
+    # grupos_datos = preparar_datos_entrenamiento_por_grupos(df_fe, FINAL_TRAINING_GROUPS, FINAL_PREDIC)
+    
+    # # Preparar datos de predicción
+    # df_predict = df_fe[df_fe["foto_mes"] == FINAL_PREDIC]
+    # X_predict = df_predict.drop(columns=["target", "target_to_calculate_gan"])
+    # clientes_predict = df_predict["numero_de_cliente"].values
+    
+    # # Entrenar modelos por grupo y semilla
+    # modelos = entrenar_modelos_por_grupo(grupos_datos, X_predict, mejores_params, SEMILLA)
+    
+    # # Generar predicciones finales
+    # resultados = generar_predicciones_finales(modelos, X_predict, clientes_predict, umbral=UMBRAL, top_k=TOP_K)
+
+    # # Guardar predicciones
+    # logger.info("Guardar predicciones")
+    # archivo_salida = guardar_predicciones_finales(resultados)
     
     # Resumen final
     logger.info("=== RESUMEN FINAL ===")
