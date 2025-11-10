@@ -317,3 +317,86 @@ def entrenar_modelo_final_undersampling(X_train: pd.DataFrame,
     logger.info(f"✅ Ensamble final completado con {len(semillas)} modelos.")
 
     return preds_prom, modelos
+
+
+def preparar_datos_entrenamiento_por_grupos(df: pd.DataFrame, grupos: dict[str, list[int]], final_predic: int) -> dict[str, tuple[pd.DataFrame, pd.Series]]:
+    """
+    Prepara los datos de entrenamiento para cada grupo definido en FINAL_TRAINING_GROUPS.
+
+    Returns
+    -------
+    dict[str, tuple[X_train, y_train]]
+    """
+    grupos_datos = {}
+    for nombre, meses in grupos.items():
+        df_train = df[df["foto_mes"].isin(meses)]
+        X_train = df_train.drop(columns=["target", "target_to_calculate_gan"])
+        y_train = df_train["target"]
+        grupos_datos[nombre] = (X_train, y_train)
+
+    logger.info(f"Datos preparados para {len(grupos_datos)} grupos.")
+    return grupos_datos
+
+
+def entrenar_modelos_por_grupo(grupos_datos: dict[str, tuple[pd.DataFrame, pd.Series]],
+                               X_predict: pd.DataFrame,
+                               mejores_params: dict,
+                               semillas: list[int]) -> list[lgb.Booster]:
+    """
+    Entrena un modelo por grupo y por semilla. Devuelve todos los modelos entrenados.
+    """
+    modelos = []
+
+    for nombre_grupo, (X_train, y_train) in grupos_datos.items():
+        logger.info(f"=== Entrenando grupo '{nombre_grupo}' con {len(X_train):,} registros ===")
+        for seed in semillas:
+            logger.info(f"  Semilla {seed}")
+            params = {
+                'objective': 'binary',
+                'metric': 'None',
+                'boosting_type': 'gbdt',
+                'first_metric_only': True,
+                'boost_from_average': True,
+                'feature_pre_filter': False,
+                'max_bin': 31,
+                'seed': seed,
+                'verbose': -1,
+                **mejores_params
+            }
+
+            lgb_train = lgb.Dataset(X_train, label=y_train)
+
+            modelo = lgb.train(
+                params,
+                lgb_train,
+                valid_sets=[lgb_train],
+                feval=ganancia_evaluator,
+                callbacks=[
+                    lgb.early_stopping(stopping_rounds=100),
+                    lgb.log_evaluation(period=100)
+                ]
+            )
+
+            modelos.append(modelo)
+
+    logger.info(f"✅ Entrenamiento completado: {len(modelos)} modelos generados.")
+    return modelos
+
+
+
+from config import FINAL_TRAINING_GROUPS, FINAL_PREDIC, SEMILLA
+
+# Preparar datos por grupo
+grupos_datos = preparar_datos_entrenamiento_por_grupos(df_fe, FINAL_TRAINING_GROUPS, FINAL_PREDIC)
+
+# Preparar datos de predicción
+df_predict = df_fe[df_fe["foto_mes"] == FINAL_PREDIC]
+X_predict = df_predict.drop(columns=["target", "target_to_calculate_gan"])
+clientes_predict = df_predict["numero_de_cliente"].values
+
+# Entrenar modelos por grupo y semilla
+modelos = entrenar_modelos_por_grupo(grupos_datos, X_predict, mejores_params, SEMILLA)
+
+# Generar predicciones finales
+resultados = generar_predicciones_finales(modelos, X_predict, clientes_predict, umbral=UMBRAL, top_k=TOP_K)
+

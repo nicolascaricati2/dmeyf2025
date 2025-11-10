@@ -132,22 +132,22 @@ def main():
         # for i in (1,2):
         #     df_fe = feature_engineering_lag(df_fe, columnas=atributos, cant_lag=i)
 
-        df_fe = generar_cambios_de_pendiente_multiples_fast(df_fe, columnas=columnas_para_fe_regresiones, ventana_corta=3, ventana_larga=6)
-        df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})  
+        # df_fe = generar_cambios_de_pendiente_multiples_fast(df_fe, columnas=columnas_para_fe_regresiones, ventana_corta=3, ventana_larga=6)
+        # df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})  
 
-        # df_fe = generar_cambios_de_pendiente_multiples_fast(df_fe, columnas=columnas_para_fe_regresiones, ventana_corta=6, ventana_larga=12)
+        # # df_fe = generar_cambios_de_pendiente_multiples_fast(df_fe, columnas=columnas_para_fe_regresiones, ventana_corta=6, ventana_larga=12)
 
-        # for i in (2,3,6,8,10,12,15):
-        #     df_fe = feature_engineering_regr_slope_window(df_fe, columnas=columnas_para_fe_regresiones, ventana = i)
-        #     df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})
-        for i in (2,3):
-            df_fe = feature_engineering_delta(df_fe, columnas=columnas_para_fe_deltas, cant_delta = i)
-        df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})  
-        for i in (4,8):
-            # df_fe = feature_engineering_delta_max(df_fe, columnas=columnas_para_fe_deltas, ventana=i)
-            df_fe = feature_engineering_delta_mean(df_fe, columnas=columnas_para_fe_deltas, ventana=i)
+        # # for i in (2,3,6,8,10,12,15):
+        # #     df_fe = feature_engineering_regr_slope_window(df_fe, columnas=columnas_para_fe_regresiones, ventana = i)
+        # #     df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})
+        # for i in (2,3):
+        #     df_fe = feature_engineering_delta(df_fe, columnas=columnas_para_fe_deltas, cant_delta = i)
+        # df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})  
+        # for i in (4,8):
+        #     # df_fe = feature_engineering_delta_max(df_fe, columnas=columnas_para_fe_deltas, ventana=i)
+        #     df_fe = feature_engineering_delta_mean(df_fe, columnas=columnas_para_fe_deltas, ventana=i)
         
-        df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})  
+        # df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})  
 
     
     
@@ -216,34 +216,49 @@ def main():
     # df_fe_under = undersample_clientes(df_fe, UNDERSAMPLING, 555557)
     # df_fe_under = df_fe_under.select_dtypes(include=["number", "bool"]).copy()
     
-    # Evaluación multimes
-    evaluar_meses_test(
-        df_fe=df_fe,
-        mejores_params=mejores_params,
-        semillas=SEMILLA,
-        study_name=STUDY_NAME,
-        config_meses=MESES_EVALUACION
-    )
+    # # Evaluación multimes
+    # evaluar_meses_test(
+    #     df_fe=df_fe,
+    #     mejores_params=mejores_params,
+    #     semillas=SEMILLA,
+    #     study_name=STUDY_NAME,
+    #     config_meses=MESES_EVALUACION
+    # )
 
 
     #06 Entrenar modelo final
-    logger.info("=== ENTRENAMIENTO FINAL ===")
-    logger.info("Preparar datos para entrenamiento final")
-    X_train, y_train, X_predict, clientes_predict = preparar_datos_entrenamiento_final(df_fe)
+    # logger.info("=== ENTRENAMIENTO FINAL ===")
+    # logger.info("Preparar datos para entrenamiento final")
+    # X_train, y_train, X_predict, clientes_predict = preparar_datos_entrenamiento_final(df_fe)
   
-    # Entrenar modelo final
-    logger.info("Entrenar modelo final")
-    _ , modelo_final = entrenar_modelo_final_undersampling(X_train, y_train, X_predict ,mejores_params, SEMILLA, ratio_undersampling = 1)
+    # # Entrenar modelo final
+    # logger.info("Entrenar modelo final")
+    # _ , modelo_final = entrenar_modelo_final_undersampling(X_train, y_train, X_predict ,mejores_params, SEMILLA, ratio_undersampling = 1)
 
   
+    # # Generar predicciones finales
+    # logger.info("Generar predicciones finales")
+    # resultados = generar_predicciones_finales(modelo_final, X_predict, clientes_predict, umbral=UMBRAL, top_k=TOP_K)
+  
+    # # Guardar predicciones
+    # logger.info("Guardar predicciones")
+    # archivo_salida = guardar_predicciones_finales(resultados)
+
+
+        # Preparar datos por grupo
+    grupos_datos = preparar_datos_entrenamiento_por_grupos(df_fe, FINAL_TRAINING_GROUPS, FINAL_PREDIC)
+    
+    # Preparar datos de predicción
+    df_predict = df_fe[df_fe["foto_mes"] == FINAL_PREDIC]
+    X_predict = df_predict.drop(columns=["target", "target_to_calculate_gan"])
+    clientes_predict = df_predict["numero_de_cliente"].values
+    
+    # Entrenar modelos por grupo y semilla
+    modelos = entrenar_modelos_por_grupo(grupos_datos, X_predict, mejores_params, SEMILLA)
+    
     # Generar predicciones finales
-    logger.info("Generar predicciones finales")
-    resultados = generar_predicciones_finales(modelo_final, X_predict, clientes_predict, umbral=UMBRAL, top_k=TOP_K)
-  
-    # Guardar predicciones
-    logger.info("Guardar predicciones")
-    archivo_salida = guardar_predicciones_finales(resultados)
-  
+    resultados = generar_predicciones_finales(modelos, X_predict, clientes_predict, umbral=UMBRAL, top_k=TOP_K)
+      
     # Resumen final
     logger.info("=== RESUMEN FINAL ===")
     logger.info(f"Entrenamiento final completado exitosamente")
