@@ -227,7 +227,7 @@ def main():
     # )
 
 
-    06 Entrenar modelo final (semillerio)
+    # 06 Entrenar modelo final (semillerio)
     logger.info("=== ENTRENAMIENTO FINAL ===")
     logger.info("Preparar datos para entrenamiento final")
     X_train, y_train, X_predict, clientes_predict = preparar_datos_entrenamiento_final(df_fe)
