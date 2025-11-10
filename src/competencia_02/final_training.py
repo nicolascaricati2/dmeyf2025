@@ -236,8 +236,6 @@ def feature_importance(modelo: lgb.Booster, max_num_features: int = 1000):
     logger.info(f"Importancia de las primeras {max_num_features} variables guardada en 'feature_importance/feature_importance_{STUDY_NAME}.csv'")
 
 
-logger = logging.getLogger(__name__)
-
 
 def entrenar_modelo_final_undersampling(X_train: pd.DataFrame,
                                         y_train: pd.Series,
@@ -381,22 +379,4 @@ def entrenar_modelos_por_grupo(grupos_datos: dict[str, tuple[pd.DataFrame, pd.Se
 
     logger.info(f"✅ Entrenamiento completado: {len(modelos)} modelos generados.")
     return modelos
-
-
-
-from config import FINAL_TRAINING_GROUPS, FINAL_PREDIC, SEMILLA
-
-# Preparar datos por grupo
-grupos_datos = preparar_datos_entrenamiento_por_grupos(df_fe, FINAL_TRAINING_GROUPS, FINAL_PREDIC)
-
-# Preparar datos de predicción
-df_predict = df_fe[df_fe["foto_mes"] == FINAL_PREDIC]
-X_predict = df_predict.drop(columns=["target", "target_to_calculate_gan"])
-clientes_predict = df_predict["numero_de_cliente"].values
-
-# Entrenar modelos por grupo y semilla
-modelos = entrenar_modelos_por_grupo(grupos_datos, X_predict, mejores_params, SEMILLA)
-
-# Generar predicciones finales
-resultados = generar_predicciones_finales(modelos, X_predict, clientes_predict, umbral=UMBRAL, top_k=TOP_K)
 
