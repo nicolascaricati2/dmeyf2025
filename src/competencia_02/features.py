@@ -325,10 +325,9 @@ def feature_engineering_variables_canarios(df: pd.DataFrame, n_canarios: int = 5
     logger.info(f"Variables canarias agregadas. DataFrame ahora tiene {df.shape[1]} columnas y {df.shape[0]} filas")
     return df
 
-
 def generar_ctrx_features(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Genera ctrx_30d, ctrx_60d, ctrx_90d, ctrx_120d usando SQL en DuckDB.
+    Genera ctrx_30d, ctrx_60d, ctrx_120d, ctrx_180d (6m) y ctrx_360d (12m) usando SQL en DuckDB.
     """
     sql = """
     SELECT *,
@@ -358,8 +357,30 @@ def generar_ctrx_features(df: pd.DataFrame) -> pd.DataFrame:
         ) OVER (
             PARTITION BY numero_de_cliente
             ORDER BY foto_mes
-            ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
-        ) AS ctrx_90d,
+            ROWS BETWEEN 3 PRECEDING AND CURRENT ROW
+        ) AS ctrx_120d,
+
+        sum(
+            coalesce(ctarjeta_debito_transacciones,0)
+            + coalesce(ctarjeta_visa_transacciones,0)
+            + coalesce(ctarjeta_master_transacciones,0)
+            + coalesce(ccajas_transacciones,0)
+        ) OVER (
+            PARTITION BY numero_de_cliente
+            ORDER BY foto_mes
+            ROWS BETWEEN 5 PRECEDING AND CURRENT ROW
+        ) AS ctrx_180d,  -- 6 meses
+
+        sum(
+            coalesce(ctarjeta_debito_transacciones,0)
+            + coalesce(ctarjeta_visa_transacciones,0)
+            + coalesce(ctarjeta_master_transacciones,0)
+            + coalesce(ccajas_transacciones,0)
+        ) OVER (
+            PARTITION BY numero_de_cliente
+            ORDER BY foto_mes
+            ROWS BETWEEN 11 PRECEDING AND CURRENT ROW
+        ) AS ctrx_360d   -- 12 meses
 
     FROM df
     """
@@ -369,6 +390,7 @@ def generar_ctrx_features(df: pd.DataFrame) -> pd.DataFrame:
     df_out = con.execute(sql).df()
     con.close()
     return df_out
+
 
 def calculate_psi(expected, actual, buckets=10):
     expected = np.array(expected)
@@ -561,7 +583,6 @@ def variables_aux(df: pd.DataFrame) -> pd.DataFrame:
     df["mingresos_mensuales"] = df["mpayroll"] + df["mpayroll2"]
     df["mingresos_vs_saldo_ratio"] = df["mingresos_mensuales"] / (1 + df["mcuentas_saldo"])
     df["tes_empleado"] = (df["cpayroll_trx"] > 0).astype(int)
-    df["cempleadores"] = df["cpayroll_trx"]
 
     # ===============================
     # 7. FLAGS BINARIOS / CONDICIONALES
