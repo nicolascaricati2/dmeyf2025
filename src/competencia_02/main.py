@@ -259,7 +259,11 @@ def main():
     
     # Generar predicciones finales
     resultados = generar_predicciones_finales(modelos, X_predict, clientes_predict, umbral=UMBRAL, top_k=TOP_K)
-      
+
+    # Guardar predicciones
+    logger.info("Guardar predicciones")
+    archivo_salida = guardar_predicciones_finales(resultados)
+    
     # Resumen final
     logger.info("=== RESUMEN FINAL ===")
     logger.info(f"Entrenamiento final completado exitosamente")
