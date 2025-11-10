@@ -122,13 +122,13 @@ def main():
         columnas_a_excluir = ["foto_mes","cliente_edad","numero_de_cliente","target","target_to_calculate_gan"]
         columnas_para_fe_regresiones = [
             c for c in df_fe.columns
-            if c.startswith(('m', 'Visa_m', 'Master_m','TC_Total_m','Visa_F', Visa_f',Master_F', Master_f')) 
+            if c.startswith(('m', 'Visa_m', 'Master_m','TC_Total_m','Visa_F', 'Visa_f','Master_F', 'Master_f')) 
             and c not in columnas_a_excluir
         ]
         
         columnas_para_fe_deltas = [
             c for c in df_fe.columns
-            if c.startswith(('c', 'Visa_c', 'Master_c','Master_s','Visa_s','TC_Total_c','TC_Total_s','t','Visa_F', Visa_f',Master_F', Master_f')) 
+            if c.startswith(('c', 'Visa_c', 'Master_c','Master_s','Visa_s','TC_Total_c','TC_Total_s','t','Visa_F', 'Visa_f','Master_F', 'Master_f')) 
             and c not in columnas_a_excluir
         ]
         df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})
