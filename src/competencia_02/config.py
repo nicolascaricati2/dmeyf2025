@@ -64,7 +64,7 @@ try:
         BUCKET_NAME = _cfg.get("BUCKET_NAME", "../../../buckets/b1/Compe_02")
         SEMILLA = _cfg.get("SEMILLA", [42])
         MES_TRAIN = _cfg.get("MES_TRAIN",[202101,202102,202103])
-        MES_VALIDACION = _cfg.get("MES_VALIDACION", 202104)
+        MES_VALIDACION = _cfg.get("MES_VALIDACION", [202104])
         MES_TEST = _cfg.get("MES_TEST", 202106)
         MESES_OPTIMIZACION =  _cfg.get("MESES_OPTIMIZACION", [202101,202102,202103,202104])
         GANANCIA_ACIERTO = _cfg.get("GANANCIA_ACIERTO", None)

@@ -9,7 +9,14 @@ from datetime import datetime
 from config import *
 from gain_function import calcular_ganancia, ganancia_lgb_binary, ganancia_evaluator
 
+
+logging.basicConfig(
+    level=logging.DEBUG,  # para ver mensajes DEBUG o superiores
+    format='%(asctime)s - %(levelname)s - %(message)s',
+)
+
 logger = logging.getLogger(__name__)
+
 
 def objetivo_ganancia(trial, df, undersampling=0.2) -> float:
     """
@@ -285,7 +292,6 @@ def objetivo_ganancia_ensamble(trial, df, undersampling=0.2) -> float:
             valid_sets=[lgb_train, lgb_val],
             valid_names=['train', 'valid'],
             feval=ganancia_evaluator,
-            num_boost_round=1000,
             callbacks=[
                 lgb.early_stopping(stopping_rounds=50),
                 lgb.log_evaluation(period=50),
@@ -303,7 +309,17 @@ def objetivo_ganancia_ensamble(trial, df, undersampling=0.2) -> float:
 
     # Normalizar por cantidad de meses usados
     n_meses_train = len(set(MES_TRAIN))
-    n_meses_valid = len(set(MES_VALIDACION))  # o len(MES_VALIDACION) si usás más de uno
+    # n_meses_valid = len(set(MES_VALIDACION))  # o len(MES_VALIDACION) si usás más de uno
+    n_meses_valid = len(MES_VALIDACION) if isinstance(MES_VALIDACION, (list, tuple, set)) else 1
+
+    # debug rápido (ejecutar dentro de objetivo_ganancia_ensamble después de obtener ganancia_total)
+    print("DEBUG SANITY CHECK")
+    print("MES_VALIDACION:", MES_VALIDACION)
+    print("n_meses_valid:", len(MES_VALIDACION) if isinstance(MES_VALIDACION, (list,tuple,set)) else 1)
+    print("Ganancia total (raw):", ganancia_total)
+    print("Ganancia normalized (current):", ganancia_total / (len(MES_VALIDACION) if isinstance(MES_VALIDACION, (list,tuple,set)) else 1))
+
+
     ganancia_normalizada = ganancia_total / (n_meses_valid)
     
 
