@@ -229,7 +229,7 @@ def main():
     # )
 
   
-    # === 06 Entrenar modelo final (distintos periodos) ===
+  # === 06 Entrenar modelo final (distintos periodos) ===
     
     # Entrenamiento en Abril
     logger.info("=== ENTRENAMIENTO FINAL ABRIL ===")
@@ -251,20 +251,25 @@ def main():
     # Entrenar modelos por grupo y semilla
     modelos_por_grupo_abril = entrenar_modelos_por_grupo_y_semilla(grupos_datos_abril, mejores_params)
     
-    # Generar predicciones finales
+    # Generar predicciones finales (ahora con mes)
     resultados_abril = generar_predicciones_finales(
         modelos_por_grupo_abril,
         X_predict_abril,
         clientes_predict_abril,
         df_predict_abril,
-        top_k=TOP_K
+        top_k=TOP_K,
+        mes=FINAL_PREDIC_APRIL
     )
     
     # Guardar predicciones
     guardar_predicciones_finales(resultados_abril["top_k_global"], f"{FINAL_PREDIC_APRIL}_global")
     guardar_predicciones_finales(resultados_abril["top_k_grupos"], f"{FINAL_PREDIC_APRIL}_grupos")
-
     
+    # Guardar ganancias
+    resultados_abril["ganancias"].to_csv(f"predict/ganancias_{FINAL_PREDIC_APRIL}.csv", index=False)
+    logger.info(f"✅ CSV de ganancias guardado: predict/ganancias_{FINAL_PREDIC_APRIL}.csv")
+    
+        
     
     # Entrenamiento en Junio
     logger.info("=== ENTRENAMIENTO FINAL JUNIO ===")
@@ -286,20 +291,24 @@ def main():
     # Entrenar modelos por grupo y semilla
     modelos_por_grupo_junio = entrenar_modelos_por_grupo_y_semilla(grupos_datos_junio, mejores_params)
     
-    # Generar predicciones finales
+    # Generar predicciones finales (ahora con mes)
     resultados_junio = generar_predicciones_finales(
         modelos_por_grupo_junio,
         X_predict_junio,
         clientes_predict_junio,
         df_predict_junio,
-        top_k=TOP_K
+        top_k=TOP_K,
+        mes=FINAL_PREDIC_JUNE
     )
     
     # Guardar predicciones
     guardar_predicciones_finales(resultados_junio["top_k_global"], f"{FINAL_PREDIC_JUNE}_global")
     guardar_predicciones_finales(resultados_junio["top_k_grupos"], f"{FINAL_PREDIC_JUNE}_grupos")
-
     
+    # Guardar ganancias
+    resultados_junio["ganancias"].to_csv(f"predict/ganancias_{FINAL_PREDIC_JUNE}.csv", index=False)
+    logger.info(f"✅ CSV de ganancias guardado: predict/ganancias_{FINAL_PREDIC_JUNE}.csv")
+
     # Resumen final
     logger.info("=== RESUMEN FINAL ===")
     logger.info("Entrenamiento final completado exitosamente")
