@@ -578,6 +578,13 @@ def entrenar_modelos_por_grupo_y_semilla(
     logger.info(f"✅ Entrenamiento completado: {sum(len(m) for m in modelos_por_grupo.values())} modelos generados.")
     return modelos_por_grupo
 
+import logging
+import os
+import numpy as np
+import pandas as pd
+import lightgbm as lgb
+
+logger = logging.getLogger(__name__)
 
 def generar_predicciones_finales(
     modelos_por_grupo: dict[str, list[lgb.Booster]],
@@ -586,8 +593,11 @@ def generar_predicciones_finales(
     df_predict: pd.DataFrame,
     top_k: int = 10000
 ) -> dict:
-    import os
     os.makedirs("predict", exist_ok=True)
+
+    logger.info("Iniciando generación de predicciones finales...")
+    logger.info(f"Cantidad de clientes a predecir: {len(clientes_predict)}")
+    logger.info(f"Cantidad de grupos de modelos: {len(modelos_por_grupo)}")
 
     predicciones_individuales = []
     preds_sum_global = np.zeros(len(X_predict), dtype=np.float32)
@@ -595,9 +605,11 @@ def generar_predicciones_finales(
     preds_por_grupo = []
 
     for nombre_grupo, modelos in modelos_por_grupo.items():
+        logger.info(f"Procesando grupo: {nombre_grupo} con {len(modelos)} modelos")
         preds_grupo = np.zeros(len(X_predict), dtype=np.float32)
 
         for i, modelo in enumerate(modelos, start=1):
+            logger.info(f"Generando predicciones con modelo {i} del grupo {nombre_grupo}")
             pred_i = modelo.predict(X_predict, num_iteration=modelo.best_iteration)
             preds_sum_global += pred_i
             preds_grupo += pred_i
@@ -613,17 +625,34 @@ def generar_predicciones_finales(
             df_i = df_i.sort_values("probabilidad", ascending=False, ignore_index=True)
             df_i.loc[:top_k - 1, "predict"] = 1
 
-            df_i = df_i.merge(df_predict[["numero_de_cliente", "target_to_calculate_gan"]], on="numero_de_cliente", how="left")
-            df_i["ganancia"] = df_i["predict"] * df_i["target_to_calculate_gan"]
+            if "target_to_calculate_gan" in df_predict.columns:
+                df_i = df_i.merge(
+                    df_predict[["numero_de_cliente", "target_to_calculate_gan"]],
+                    on="numero_de_cliente",
+                    how="left"
+                )
+                df_i["ganancia"] = df_i["predict"] * df_i["target_to_calculate_gan"]
 
-            predicciones_individuales.append(df_i[["numero_de_cliente", "probabilidad", "predict", "ganancia", "modelo_id", "grupo"]])
+            predicciones_individuales.append(
+                df_i[["numero_de_cliente", "probabilidad", "predict", "grupo", "modelo_id"] + 
+                     (["ganancia"] if "ganancia" in df_i.columns else [])]
+            )
 
         preds_grupo /= len(modelos)
         preds_por_grupo.append(preds_grupo)
 
-    df_all_preds = pd.concat(predicciones_individuales, ignore_index=True)
-    df_all_preds.to_csv("predict/predicciones_individuales.csv", index=False)
+    if predicciones_individuales:
+        df_all_preds = pd.concat(predicciones_individuales, ignore_index=True)
+        df_all_preds.to_csv("predict/predicciones_individuales.csv", index=False)
+        logger.info(f"CSV de predicciones individuales guardado con {len(df_all_preds)} filas")
+    else:
+        logger.warning("No se generaron predicciones individuales (¿modelos_por_grupo vacío?)")
 
+    if n_modelos == 0:
+        logger.error("No se entrenó ningún modelo, no se pueden generar predicciones globales")
+        return {}
+
+    # Global
     y_pred_global = preds_sum_global / n_modelos
     df_topk_global = pd.DataFrame({
         "numero_de_cliente": clientes_predict,
@@ -631,7 +660,10 @@ def generar_predicciones_finales(
     }).sort_values("probabilidad", ascending=False, ignore_index=True)
     df_topk_global["predict"] = 0
     df_topk_global.loc[:top_k - 1, "predict"] = 1
+    df_topk_global.to_csv("predict/predicciones_global.csv", index=False)
+    logger.info(f"CSV global guardado con {len(df_topk_global)} filas")
 
+    # Grupos
     y_pred_grupos = sum(preds_por_grupo) / len(preds_por_grupo)
     df_topk_grupos = pd.DataFrame({
         "numero_de_cliente": clientes_predict,
@@ -639,12 +671,12 @@ def generar_predicciones_finales(
     }).sort_values("probabilidad", ascending=False, ignore_index=True)
     df_topk_grupos["predict"] = 0
     df_topk_grupos.loc[:top_k - 1, "predict"] = 1
+    df_topk_grupos.to_csv("predict/predicciones_grupos.csv", index=False)
+    logger.info(f"CSV de grupos guardado con {len(df_topk_grupos)} filas")
+
+    logger.info("Generación de predicciones finales completada exitosamente")
 
     return {
         "top_k_global": df_topk_global[["numero_de_cliente", "predict"]],
         "top_k_grupos": df_topk_grupos[["numero_de_cliente", "predict"]]
     }
-    
-
-
-
