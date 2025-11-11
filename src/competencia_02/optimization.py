@@ -194,46 +194,48 @@ def objetivo_ganancia_ensamble(trial, df, undersampling=0.2) -> float:
     # --- UNDERSAMPLING A NIVEL CLIENTE ---
     if isinstance(undersampling, float) and 0 < undersampling < 1:
         np.random.seed(SEMILLA[0])
-
-        # Clientes que alguna vez tuvieron target=1 → conservar todos sus registros
-        clientes_con_target1 = (
-            df_train.groupby("numero_de_cliente")["target"]
-            .max()
-            .reset_index()
-        )
-        clientes_con_target1 = clientes_con_target1[
-            clientes_con_target1["target"] == 1
-        ]["numero_de_cliente"]
-
-        # Clientes que siempre fueron 0
-        clientes_siempre_0 = (
-            df_train.loc[
-                ~df_train["numero_de_cliente"].isin(clientes_con_target1),
-                "numero_de_cliente",
-            ]
-            .unique()
-        )
-
+    
+        # Log de distribución por mes antes de filtrar
+        logger.info("Distribución de target por mes antes de undersampling:")
+        for mes in sorted(df_train["foto_mes"].unique()):
+            df_mes = df_train[df_train["foto_mes"] == mes]
+            dist = df_mes["target"].value_counts().to_dict()
+            logger.info(f"  Mes {mes}: {dist}")
+    
+        # Clientes con al menos un target=1
+        clientes_con_target1 = df_train[df_train["target"] == 1]["numero_de_cliente"].unique()
+        logger.info(f"Clientes con target=1: {len(clientes_con_target1)}")
+    
+        # Clientes que nunca tuvieron target=1
+        todos_clientes = df_train["numero_de_cliente"].unique()
+        clientes_siempre_0 = np.setdiff1d(todos_clientes, clientes_con_target1)
+        logger.info(f"Clientes siempre 0: {len(clientes_siempre_0)}")
+    
         # Subsamplear clientes 0
         n_subsample = int(len(clientes_siempre_0) * undersampling)
-        clientes_siempre_0_sample = np.random.choice(
-            clientes_siempre_0, n_subsample, replace=False
-        )
-
+        clientes_siempre_0_sample = np.random.choice(clientes_siempre_0, n_subsample, replace=False)
+        logger.info(f"Clientes 0 seleccionados por undersampling: {len(clientes_siempre_0_sample)}")
+    
         # Combinar ambos grupos
-        clientes_final = np.concatenate(
-            [clientes_con_target1.values, clientes_siempre_0_sample]
-        )
-
-        # Filtrar train
-        df_train = df_train[df_train["numero_de_cliente"].isin(clientes_final)]
-
-        logger.debug(
-            f"Undersampling aplicado: {len(clientes_con_target1)} clientes con target=1 "
-            f"+ {len(clientes_siempre_0_sample)} clientes 0 (de {len(clientes_siempre_0)} posibles) "
-            f"→ total {len(clientes_final)} clientes en train."
-        )
-
+        clientes_final = np.concatenate([clientes_con_target1, clientes_siempre_0_sample])
+        logger.info(f"Total clientes en train después de undersampling: {len(clientes_final)}")
+    
+        # Filtrar df_train
+        df_train = df_train[df_train["numero_de_cliente"].isin(clientes_final)].copy()
+    
+        # Log de distribución final
+        logger.info("Distribución de target en df_train final:")
+        dist_final = df_train["target"].value_counts().to_dict()
+        logger.info(f"  0: {dist_final.get(0, 0)}, 1: {dist_final.get(1, 0)}")
+        logger.info(f"  Proporción positivos: {dist_final.get(1, 0) / df_train.shape[0] * 100:.2f}%")
+    
+        # Log por mes final
+        logger.info("Distribución por mes en df_train final:")
+        for mes in sorted(df_train["foto_mes"].unique()):
+            df_mes = df_train[df_train["foto_mes"] == mes]
+            dist = df_mes["target"].value_counts().to_dict()
+            logger.info(f"  Mes {mes}: {dist}")
+    
     else:
         logger.debug("Sin undersampling: se usan todos los clientes en train.")
 
