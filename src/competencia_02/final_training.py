@@ -644,7 +644,7 @@ def generar_predicciones_finales(
         "top_k_global": df_topk_global[["numero_de_cliente", "predict"]],
         "top_k_grupos": df_topk_grupos[["numero_de_cliente", "predict"]]
     }
-
+    
 
 
 
