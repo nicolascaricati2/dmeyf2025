@@ -7,7 +7,7 @@ import json
 import os
 from datetime import datetime
 from config import *
-from gain_function import calcular_ganancia, ganancia_lgb_binary, ganancia_evaluator
+from gain_function import calcular_ganancia, ganancia_lgb_binary, ganancia_evaluator, calcular_ganancia_top_k
 
 
 logging.basicConfig(
@@ -305,8 +305,10 @@ def objetivo_ganancia_ensamble(trial, df, undersampling=0.2) -> float:
 
 
     # Calcular ganancia final del ensamble
-    ganancia_total = ganancia_evaluator(y_pred_proba_prom, y_val)
-
+    # ganancia_total = ganancia_evaluator(y_pred_proba_prom, y_val)
+    
+    ganancia_total = calcular_ganancia_top_k(y_val, y_pred_proba_prom, k=10000)
+    
     # Normalizar por cantidad de meses usados
     n_meses_train = len(set(MES_TRAIN))
     # n_meses_valid = len(set(MES_VALIDACION))  # o len(MES_VALIDACION) si usás más de uno

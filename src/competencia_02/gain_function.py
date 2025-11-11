@@ -119,3 +119,37 @@ def ganancia_evaluator(y_pred, y_true) -> float:
     else:
         return ganancia_maxima
 
+
+def calcular_ganancia_top_k(y_true, y_pred_proba, k=10000):
+    """
+    Calcula la ganancia total considerando como positivos los k casos con mayor probabilidad.
+    
+    Args:
+        y_true (array-like): Valores reales (0 o 1)
+        y_pred_proba (array-like): Probabilidades de predicción (float entre 0 y 1)
+        k (int): Cantidad de casos que se marcan como positivos
+    
+    Returns:
+        float: Ganancia total
+    """
+    # Convertir a numpy arrays si es necesario
+    if isinstance(y_true, pd.Series):
+        y_true = y_true.values
+    if isinstance(y_pred_proba, pd.Series):
+        y_pred_proba = y_pred_proba.values
+
+    # Inicializar predicciones en 0
+    y_pred_bin = np.zeros_like(y_pred_proba, dtype=int)
+
+    # Índices de los k casos con mayor probabilidad
+    idx_top_k = np.argpartition(y_pred_proba, -k)[-k:]
+    
+    # Marcar esos casos como 1
+    y_pred_bin[idx_top_k] = 1
+
+    # Calcular ganancia usando la función que ya tenés
+    ganancia_total = calcular_ganancia(y_true, y_pred_bin)
+    
+    return ganancia_total
+
+
