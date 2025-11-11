@@ -229,53 +229,83 @@ def main():
     # )
 
   
-    # 06 Entrenar modelo final (distintos periodos)
+    # === 06 Entrenar modelo final (distintos periodos) ===
+    
     # Entrenamiento en Abril
-    # Preparar datos por grupo
-    grupos_datos_abril = preparar_datos_entrenamiento_por_grupos(df_fe, FINAL_TRAINING_GROUPS_APRIL, FINAL_PREDIC_APRIL)
+    logger.info("=== ENTRENAMIENTO FINAL ABRIL ===")
+    
+    # Preparar datos por grupo y semilla con undersampling
+    grupos_datos_abril = preparar_datos_entrenamiento_por_grupos_por_semilla(
+        df_fe,
+        FINAL_TRAINING_GROUPS_APRIL,
+        FINAL_PREDIC_APRIL,
+        undersampling_ratio=UNDERSAMPLING_ENTRENAMIENTO_ENSAMBLE,
+        semillas=SEMILLA
+    )
     
     # Preparar datos de predicción
     df_predict_abril = df_fe[df_fe["foto_mes"] == FINAL_PREDIC_APRIL]
-    X_predict_abril = df_predict.drop(columns=["target", "target_to_calculate_gan"])
-    clientes_predict_abril = df_predict["numero_de_cliente"].values
+    X_predict_abril = df_predict_abril.drop(columns=["target", "target_to_calculate_gan"])
+    clientes_predict_abril = df_predict_abril["numero_de_cliente"].values
     
     # Entrenar modelos por grupo y semilla
-    modelos_por_grupo_abril = entrenar_modelos_por_grupo(grupos_datos_abril, mejores_params, SEMILLA)
+    modelos_por_grupo_abril = entrenar_modelos_por_grupo_y_semilla(grupos_datos_abril, mejores_params)
     
     # Generar predicciones finales
-    resultados_abril = generar_predicciones_finales(modelos_por_grupo_abril, X_predict_abril, clientes_predict_abril, df_predict_abril, top_k=TOP_K)
+    resultados_abril = generar_predicciones_finales(
+        modelos_por_grupo_abril,
+        X_predict_abril,
+        clientes_predict_abril,
+        df_predict_abril,
+        top_k=TOP_K
+    )
     
     # Guardar predicciones
     guardar_predicciones_finales(resultados_abril["top_k_global"], FINAL_PREDIC_APRIL + "_global")
     guardar_predicciones_finales(resultados_abril["top_k_grupos"], FINAL_PREDIC_APRIL + "_grupos")
-
-
+    
+    
     # Entrenamiento en Junio
-    # Preparar datos por grupo
-    grupos_datos_junio = preparar_datos_entrenamiento_por_grupos(df_fe, FINAL_TRAINING_GROUPS_JUNE, FINAL_PREDIC_JUNE)
+    logger.info("=== ENTRENAMIENTO FINAL JUNIO ===")
+    
+    # Preparar datos por grupo y semilla con undersampling
+    grupos_datos_junio = preparar_datos_entrenamiento_por_grupos_por_semilla(
+        df_fe,
+        FINAL_TRAINING_GROUPS_JUNE,
+        FINAL_PREDIC_JUNE,
+        undersampling_ratio=UNDERSAMPLING_ENTRENAMIENTO_ENSAMBLE,
+        semillas=SEMILLA
+    )
     
     # Preparar datos de predicción
     df_predict_junio = df_fe[df_fe["foto_mes"] == FINAL_PREDIC_JUNE]
-    X_predict_junio = df_predict.drop(columns=["target", "target_to_calculate_gan"])
-    clientes_predict_junio = df_predict["numero_de_cliente"].values
+    X_predict_junio = df_predict_junio.drop(columns=["target", "target_to_calculate_gan"])
+    clientes_predict_junio = df_predict_junio["numero_de_cliente"].values
     
     # Entrenar modelos por grupo y semilla
-    modelos_por_grupo_junio = entrenar_modelos_por_grupo(grupos_datos_junio, mejores_params, SEMILLA)
+    modelos_por_grupo_junio = entrenar_modelos_por_grupo_y_semilla(grupos_datos_junio, mejores_params)
     
     # Generar predicciones finales
-    resultados_junio = generar_predicciones_finales(modelos_por_grupo_junio, X_predict_junio, clientes_predict_junio, df_predict_junio, top_k=TOP_K)
+    resultados_junio = generar_predicciones_finales(
+        modelos_por_grupo_junio,
+        X_predict_junio,
+        clientes_predict_junio,
+        df_predict_junio,
+        top_k=TOP_K
+    )
     
     # Guardar predicciones
     guardar_predicciones_finales(resultados_junio["top_k_global"], FINAL_PREDIC_JUNE + "_global")
     guardar_predicciones_finales(resultados_junio["top_k_grupos"], FINAL_PREDIC_JUNE + "_grupos")
-
+    
     
     # Resumen final
     logger.info("=== RESUMEN FINAL ===")
-    logger.info(f"Entrenamiento final completado exitosamente")
+    logger.info("Entrenamiento final completado exitosamente")
     logger.info(f"Mejores hiperparámetros utilizados: {mejores_params}")
     logger.info(f"Log detallado: logs/{nombre_log}")
-    logger.info(f">>> Ejecución finalizada. Revisar logs para mas detalles.")
+    logger.info(">>> Ejecución finalizada. Revisar logs para más detalles.")
+    
 
 if __name__ == "__main__":
     main()

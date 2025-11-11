@@ -27,8 +27,8 @@ try:
         UMBRAL = _cfg.get("UMBRAL", 0.04)
         HYPERPARAM_RANGES = _cfg.get("HYPERPARAM_RANGES", {})
         TOP_K = _cfg.get("TOP_K", 10000)
-        UNDERSAMPLING = _cfgGeneral.get("UNDERSAMPLING", 0.2)
-        UNDERSAMPLING_MODELO_FINAL = _cfg.get("UNDERSAMPLING_MODELO_FINAL", 0.2)
+        UNDERSAMPLING_OPTIMIZACION = _cfgGeneral.get("UNDERSAMPLING_OPTIMIZACION", 0.2)
+        UNDERSAMPLING_ENTRENAMIENTO_ENSAMBLE = _cfg.get("UNDERSAMPLING_ENTRENAMIENTO_ENSAMBLE", 0.2) 
         MESES_EVALUACION = _cfg.get("MESES_EVALUACION", {})
         if not isinstance(MESES_EVALUACION, dict):
             raise ValueError("La sección MESES_EVALUACION debe ser un diccionario en el YAML.")
