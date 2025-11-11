@@ -262,8 +262,8 @@ def main():
     )
     
     # Guardar predicciones
-    guardar_predicciones_finales(resultados_abril["top_k_global"], f"{FINAL_PREDIC_APRIL}_global")
-    guardar_predicciones_finales(resultados_abril["top_k_grupos"], f"{FINAL_PREDIC_APRIL}_grupos")
+    guardar_predicciones_finales({"top_k": resultados_abril["top_k_global"]}, f"{FINAL_PREDIC_APRIL}_global")
+    guardar_predicciones_finales({"top_k": resultados_abril["top_k_grupos"]}, f"{FINAL_PREDIC_APRIL}_grupos")
     
     # Guardar ganancias
     resultados_abril["ganancias"].to_csv(f"predict/ganancias_{FINAL_PREDIC_APRIL}.csv", index=False)
@@ -302,8 +302,8 @@ def main():
     )
     
     # Guardar predicciones
-    guardar_predicciones_finales(resultados_junio["top_k_global"], f"{FINAL_PREDIC_JUNE}_global")
-    guardar_predicciones_finales(resultados_junio["top_k_grupos"], f"{FINAL_PREDIC_JUNE}_grupos")
+    guardar_predicciones_finales({"top_k": resultados_junio["top_k_global"]}, f"{FINAL_PREDIC_JUNE}_global")
+    guardar_predicciones_finales({"top_k": resultados_junio["top_k_grupos"]}, f"{FINAL_PREDIC_JUNE}_grupos")
     
     # Guardar ganancias
     resultados_junio["ganancias"].to_csv(f"predict/ganancias_{FINAL_PREDIC_JUNE}.csv", index=False)
