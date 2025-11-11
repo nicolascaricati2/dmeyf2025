@@ -128,84 +128,166 @@ def entrenar_modelo_final(X_train: pd.DataFrame,
     return preds_prom, modelos
 
 
+# def generar_predicciones_finales(
+#     modelos: list[lgb.Booster],
+#     X_predict: pd.DataFrame,
+#     clientes_predict: np.ndarray,
+#     umbral: float = 0.04,
+#     top_k: int = 10000
+# ) -> dict:
+#     """
+#     Genera las predicciones finales promediando varios modelos (ensamble).
+#     Produce tanto predicciones con umbral como por top_k.
+
+#     Args
+#     ----
+#     modelos : list[lgb.Booster]
+#         Lista de modelos LightGBM entrenados.
+#     X_predict : pd.DataFrame
+#         Features para predicción.
+#     clientes_predict : np.ndarray
+#         IDs de clientes.
+#     umbral : float, default=0.04
+#         Umbral para clasificación binaria.
+#     top_k : int, default=10000
+#         Cantidad de clientes con mayor probabilidad a seleccionar.
+
+#     Returns
+#     -------
+#     dict
+#         {'umbral': DataFrame, 'top_k': DataFrame}
+#     """
+#     import os
+#     os.makedirs("predict", exist_ok=True)
+
+#     logger.info("=== GENERANDO PREDICCIONES FINALES (ENSAMBLE) ===")
+#     n_modelos = len(modelos)
+#     logger.info(f"Se detectaron {n_modelos} modelos para el ensamble.")
+
+#     # --- Promediar predicciones ---
+#     preds_sum = np.zeros(len(X_predict), dtype=np.float32)
+#     for i, modelo in enumerate(modelos, start=1):
+#         pred_i = modelo.predict(X_predict, num_iteration=modelo.best_iteration)
+#         preds_sum += pred_i
+#         logger.info(f"  Modelo {i}/{n_modelos} procesado.")
+#     y_pred = preds_sum / n_modelos
+
+#     # --- Predicciones binarias (umbral) ---
+#     y_pred_bin = (y_pred > umbral).astype(int)
+#     resultados_umbral = pd.DataFrame({
+#         "numero_de_cliente": clientes_predict,
+#         "predict": y_pred_bin,
+#         "probabilidad": y_pred
+#     })
+
+#     total = len(resultados_umbral)
+#     positivos = (resultados_umbral["predict"] == 1).sum()
+#     pct_positivos = positivos / total * 100
+#     logger.info(f"Total clientes: {total:,}")
+#     logger.info(f"Predicciones positivas: {positivos:,} ({pct_positivos:.2f}%)")
+#     logger.info(f"Umbral utilizado: {umbral}")
+
+#     # --- Feature importance del primer modelo (referencia) ---
+#     feature_importance(modelos[0])
+
+#     resultados = {"umbral": resultados_umbral[["numero_de_cliente", "predict"]]}
+
+#     # --- Predicciones por top_k ---
+#     logger.info(f"Generando predicciones con top_k={top_k:,}")
+#     df_topk = resultados_umbral[["numero_de_cliente", "probabilidad"]].copy()
+#     df_topk = df_topk.sort_values("probabilidad", ascending=False, ignore_index=True)
+#     df_topk["predict"] = 0
+#     df_topk.loc[:top_k - 1, "predict"] = 1
+
+#     resultados["top_k"] = df_topk[["numero_de_cliente", "predict"]]
+
+#     logger.info(f"Máx prob: {df_topk['probabilidad'].iloc[0]:.4f}")
+#     logger.info(f"Mín prob dentro del top_k: {df_topk['probabilidad'].iloc[top_k - 1]:.4f}")
+#     logger.info("✅ Predicciones finales generadas correctamente.")
+
+#     return resultados
+
+
 def generar_predicciones_finales(
-    modelos: list[lgb.Booster],
+    modelos_por_grupo: dict[str, list[lgb.Booster]],
     X_predict: pd.DataFrame,
     clientes_predict: np.ndarray,
-    umbral: float = 0.04,
+    df_predict: pd.DataFrame,
     top_k: int = 10000
 ) -> dict:
     """
-    Genera las predicciones finales promediando varios modelos (ensamble).
-    Produce tanto predicciones con umbral como por top_k.
-
-    Args
-    ----
-    modelos : list[lgb.Booster]
-        Lista de modelos LightGBM entrenados.
-    X_predict : pd.DataFrame
-        Features para predicción.
-    clientes_predict : np.ndarray
-        IDs de clientes.
-    umbral : float, default=0.04
-        Umbral para clasificación binaria.
-    top_k : int, default=10000
-        Cantidad de clientes con mayor probabilidad a seleccionar.
-
-    Returns
-    -------
-    dict
-        {'umbral': DataFrame, 'top_k': DataFrame}
+    Genera predicciones finales por top_k, guarda predicciones individuales con ganancia,
+    y produce dos ensambles: global y por grupo.
     """
     import os
     os.makedirs("predict", exist_ok=True)
 
     logger.info("=== GENERANDO PREDICCIONES FINALES (ENSAMBLE) ===")
-    n_modelos = len(modelos)
-    logger.info(f"Se detectaron {n_modelos} modelos para el ensamble.")
+    predicciones_individuales = []
+    preds_sum_global = np.zeros(len(X_predict), dtype=np.float32)
+    n_modelos = 0
 
-    # --- Promediar predicciones ---
-    preds_sum = np.zeros(len(X_predict), dtype=np.float32)
-    for i, modelo in enumerate(modelos, start=1):
-        pred_i = modelo.predict(X_predict, num_iteration=modelo.best_iteration)
-        preds_sum += pred_i
-        logger.info(f"  Modelo {i}/{n_modelos} procesado.")
-    y_pred = preds_sum / n_modelos
+    preds_por_grupo = []
 
-    # --- Predicciones binarias (umbral) ---
-    y_pred_bin = (y_pred > umbral).astype(int)
-    resultados_umbral = pd.DataFrame({
+    for nombre_grupo, modelos in modelos_por_grupo.items():
+        logger.info(f"Procesando grupo '{nombre_grupo}' con {len(modelos)} modelos")
+        preds_grupo = np.zeros(len(X_predict), dtype=np.float32)
+
+        for i, modelo in enumerate(modelos, start=1):
+            pred_i = modelo.predict(X_predict, num_iteration=modelo.best_iteration)
+            preds_sum_global += pred_i
+            preds_grupo += pred_i
+            n_modelos += 1
+
+            df_i = pd.DataFrame({
+                "numero_de_cliente": clientes_predict,
+                "probabilidad": pred_i,
+                "grupo": nombre_grupo,
+                "modelo_id": f"{nombre_grupo}_seed{i}"
+            })
+            df_i["predict"] = 0
+            df_i = df_i.sort_values("probabilidad", ascending=False, ignore_index=True)
+            df_i.loc[:top_k - 1, "predict"] = 1
+
+            df_i = df_i.merge(df_predict[["numero_de_cliente", "target_to_calculate_gan"]], on="numero_de_cliente", how="left")
+            df_i["ganancia"] = df_i["predict"] * df_i["target_to_calculate_gan"]
+
+            ganancia_total = df_i["ganancia"].sum()
+            logger.info(f"Modelo {df_i['modelo_id'].iloc[0]}: Ganancia total = {ganancia_total:,.2f}")
+
+            predicciones_individuales.append(df_i[["numero_de_cliente", "probabilidad", "predict", "ganancia", "modelo_id", "grupo"]])
+
+        preds_grupo /= len(modelos)
+        preds_por_grupo.append(preds_grupo)
+
+    # Guardar CSV de predicciones individuales
+    df_all_preds = pd.concat(predicciones_individuales, ignore_index=True)
+    df_all_preds.to_csv("predict/predicciones_individuales.csv", index=False)
+
+    # Ensamble global
+    y_pred_global = preds_sum_global / n_modelos
+    df_topk_global = pd.DataFrame({
         "numero_de_cliente": clientes_predict,
-        "predict": y_pred_bin,
-        "probabilidad": y_pred
-    })
+        "probabilidad": y_pred_global
+    }).sort_values("probabilidad", ascending=False, ignore_index=True)
+    df_topk_global["predict"] = 0
+    df_topk_global.loc[:top_k - 1, "predict"] = 1
 
-    total = len(resultados_umbral)
-    positivos = (resultados_umbral["predict"] == 1).sum()
-    pct_positivos = positivos / total * 100
-    logger.info(f"Total clientes: {total:,}")
-    logger.info(f"Predicciones positivas: {positivos:,} ({pct_positivos:.2f}%)")
-    logger.info(f"Umbral utilizado: {umbral}")
+    # Ensamble por grupo
+    y_pred_grupos = sum(preds_por_grupo) / len(preds_por_grupo)
+    df_topk_grupos = pd.DataFrame({
+        "numero_de_cliente": clientes_predict,
+        "probabilidad": y_pred_grupos
+    }).sort_values("probabilidad", ascending=False, ignore_index=True)
+    df_topk_grupos["predict"] = 0
+    df_topk_grupos.loc[:top_k - 1, "predict"] = 1
 
-    # --- Feature importance del primer modelo (referencia) ---
-    feature_importance(modelos[0])
-
-    resultados = {"umbral": resultados_umbral[["numero_de_cliente", "predict"]]}
-
-    # --- Predicciones por top_k ---
-    logger.info(f"Generando predicciones con top_k={top_k:,}")
-    df_topk = resultados_umbral[["numero_de_cliente", "probabilidad"]].copy()
-    df_topk = df_topk.sort_values("probabilidad", ascending=False, ignore_index=True)
-    df_topk["predict"] = 0
-    df_topk.loc[:top_k - 1, "predict"] = 1
-
-    resultados["top_k"] = df_topk[["numero_de_cliente", "predict"]]
-
-    logger.info(f"Máx prob: {df_topk['probabilidad'].iloc[0]:.4f}")
-    logger.info(f"Mín prob dentro del top_k: {df_topk['probabilidad'].iloc[top_k - 1]:.4f}")
     logger.info("✅ Predicciones finales generadas correctamente.")
+    return {
+        "top_k_global": df_topk_global[["numero_de_cliente", "predict"]],
+        "top_k_grupos": df_topk_grupos[["numero_de_cliente", "predict"]]
+    }
 
-    return resultados
 
 
 def feature_importance(modelo: lgb.Booster, max_num_features: int = 1000):
@@ -336,17 +418,62 @@ def preparar_datos_entrenamiento_por_grupos(df: pd.DataFrame, grupos: dict[str, 
     return grupos_datos
 
 
+# def entrenar_modelos_por_grupo(grupos_datos: dict[str, tuple[pd.DataFrame, pd.Series]],
+#                                X_predict: pd.DataFrame,
+#                                mejores_params: dict,
+#                                semillas: list[int]) -> list[lgb.Booster]:
+#     """
+#     Entrena un modelo por grupo y por semilla. Devuelve todos los modelos entrenados.
+#     """
+#     modelos = []
+
+#     for nombre_grupo, (X_train, y_train) in grupos_datos.items():
+#         logger.info(f"=== Entrenando grupo '{nombre_grupo}' con {len(X_train):,} registros ===")
+#         for seed in semillas:
+#             logger.info(f"  Semilla {seed}")
+#             params = {
+#                 'objective': 'binary',
+#                 'metric': 'None',
+#                 'boosting_type': 'gbdt',
+#                 'first_metric_only': True,
+#                 'boost_from_average': True,
+#                 'feature_pre_filter': False,
+#                 'max_bin': 31,
+#                 'seed': seed,
+#                 'verbose': -1,
+#                 **mejores_params
+#             }
+
+#             lgb_train = lgb.Dataset(X_train, label=y_train)
+
+#             modelo = lgb.train(
+#                 params,
+#                 lgb_train,
+#                 valid_sets=[lgb_train],
+#                 feval=ganancia_evaluator,
+#                 callbacks=[
+#                     lgb.early_stopping(stopping_rounds=100),
+#                     lgb.log_evaluation(period=100)
+#                 ]
+#             )
+
+#             modelos.append(modelo)
+
+#     logger.info(f"✅ Entrenamiento completado: {len(modelos)} modelos generados.")
+#     return modelos
+
+
 def entrenar_modelos_por_grupo(grupos_datos: dict[str, tuple[pd.DataFrame, pd.Series]],
-                               X_predict: pd.DataFrame,
                                mejores_params: dict,
-                               semillas: list[int]) -> list[lgb.Booster]:
+                               semillas: list[int]) -> dict[str, list[lgb.Booster]]:
     """
-    Entrena un modelo por grupo y por semilla. Devuelve todos los modelos entrenados.
+    Entrena modelos por grupo y semilla. Devuelve dict: grupo → lista de modelos.
     """
-    modelos = []
+    modelos_por_grupo = {}
 
     for nombre_grupo, (X_train, y_train) in grupos_datos.items():
         logger.info(f"=== Entrenando grupo '{nombre_grupo}' con {len(X_train):,} registros ===")
+        modelos = []
         for seed in semillas:
             logger.info(f"  Semilla {seed}")
             params = {
@@ -374,9 +501,14 @@ def entrenar_modelos_por_grupo(grupos_datos: dict[str, tuple[pd.DataFrame, pd.Se
                     lgb.log_evaluation(period=100)
                 ]
             )
-
             modelos.append(modelo)
 
-    logger.info(f"✅ Entrenamiento completado: {len(modelos)} modelos generados.")
-    return modelos
+        modelos_por_grupo[nombre_grupo] = modelos
+
+    logger.info(f"✅ Entrenamiento completado: {sum(len(m) for m in modelos_por_grupo.values())} modelos generados.")
+    return modelos_por_grupo
+
+
+
+
 

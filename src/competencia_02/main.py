@@ -211,11 +211,10 @@ def main():
 
     # mejores_params = cargar_mejores_hiperparametros()
 
-    # mejores_params = {'bagging_fraction': 0.9366158838759591, 'feature_fraction': 0.6097465146850822, 'lambda_l1': 1.8715916172393408, 'lambda_l2': 0.47499514072885834, 'learning_rate': 0.03421069355219755, 'min_data_in_leaf': 19, 'num_boost_round': 1562, 'num_leaves': 151}
     mejores_params = {'bagging_fraction': 0.648239786, 'feature_fraction': 0.338110921, 'lambda_l1': 3.152084178, 'lambda_l2': 2.623895465, 'learning_rate': 0.074681467, 'min_data_in_leaf': 10, 'num_boost_round': 496, 'num_leaves': 26}    
 
 
-    logger.info("=== EVALUACIÓN EN CONJUNTO DE TEST ===")
+    # logger.info("=== EVALUACIÓN EN CONJUNTO DE TEST ===")
 
     # df_fe_under = undersample_clientes(df_fe, UNDERSAMPLING, 555557)
     # df_fe_under = df_fe_under.select_dtypes(include=["number", "bool"]).copy()
@@ -229,54 +228,53 @@ def main():
     #     config_meses=MESES_EVALUACION
     # )
 
-
-    # # 06 Entrenar modelo final (semillerio)
-    # logger.info("=== ENTRENAMIENTO FINAL ===")
-    # logger.info("Preparar datos para entrenamiento final")
-    # X_train, y_train, X_predict, clientes_predict = preparar_datos_entrenamiento_final(df_fe)
   
-    # # Entrenar modelo final
-    # logger.info("Entrenar modelo final")
-    # _ , modelo_final = entrenar_modelo_final_undersampling(X_train, y_train, X_predict ,mejores_params, SEMILLA, ratio_undersampling = 1)
-
-  
-    # # Generar predicciones finales
-    # logger.info("Generar predicciones finales")
-    # resultados = generar_predicciones_finales(modelo_final, X_predict, clientes_predict, umbral=UMBRAL, top_k=TOP_K)
-  
-    # # Guardar predicciones
-    # logger.info("Guardar predicciones")
-    # archivo_salida = guardar_predicciones_finales(resultados)
-
     # 06 Entrenar modelo final (distintos periodos)
+    # Entrenamiento en Abril
     # Preparar datos por grupo
-    grupos_datos = preparar_datos_entrenamiento_por_grupos(df_fe, FINAL_TRAINING_GROUPS, FINAL_PREDIC)
+    grupos_datos_abril = preparar_datos_entrenamiento_por_grupos(df_fe, FINAL_TRAINING_GROUPS_APRIL, FINAL_PREDIC_APRIL)
     
     # Preparar datos de predicción
-    df_predict = df_fe[df_fe["foto_mes"] == FINAL_PREDIC]
-    X_predict = df_predict.drop(columns=["target", "target_to_calculate_gan"])
-    clientes_predict = df_predict["numero_de_cliente"].values
+    df_predict_abril = df_fe[df_fe["foto_mes"] == FINAL_PREDIC_APRIL]
+    X_predict_abril = df_predict.drop(columns=["target", "target_to_calculate_gan"])
+    clientes_predict_abril = df_predict["numero_de_cliente"].values
     
     # Entrenar modelos por grupo y semilla
-    modelos = entrenar_modelos_por_grupo(grupos_datos, X_predict, mejores_params, SEMILLA)
+    modelos_por_grupo_abril = entrenar_modelos_por_grupo(grupos_datos_abril, mejores_params, SEMILLA)
     
     # Generar predicciones finales
-    resultados = generar_predicciones_finales(modelos, X_predict, clientes_predict, umbral=UMBRAL, top_k=TOP_K)
-
+    resultados_abril = generar_predicciones_finales(modelos_por_grupo_abril, X_predict_abril, clientes_predict_abril, df_predict_abril, top_k=TOP_K)
+    
     # Guardar predicciones
-    logger.info("Guardar predicciones")
-    archivo_salida = guardar_predicciones_finales(resultados)
+    guardar_predicciones_finales(resultados_abril["top_k_global"], FINAL_PREDIC_APRIL + "_global")
+    guardar_predicciones_finales(resultados_abril["top_k_grupos"], FINAL_PREDIC_APRIL + "_grupos")
+
+
+    # Entrenamiento en Junio
+    # Preparar datos por grupo
+    grupos_datos_junio = preparar_datos_entrenamiento_por_grupos(df_fe, FINAL_TRAINING_GROUPS_JUNE, FINAL_PREDIC_JUNE)
+    
+    # Preparar datos de predicción
+    df_predict_junio = df_fe[df_fe["foto_mes"] == FINAL_PREDIC_JUNE]
+    X_predict_junio = df_predict.drop(columns=["target", "target_to_calculate_gan"])
+    clientes_predict_junio = df_predict["numero_de_cliente"].values
+    
+    # Entrenar modelos por grupo y semilla
+    modelos_por_grupo_junio = entrenar_modelos_por_grupo(grupos_datos_junio, mejores_params, SEMILLA)
+    
+    # Generar predicciones finales
+    resultados_junio = generar_predicciones_finales(modelos_por_grupo_junio, X_predict_junio, clientes_predict_junio, df_predict_junio, top_k=TOP_K)
+    
+    # Guardar predicciones
+    guardar_predicciones_finales(resultados_junio["top_k_global"], FINAL_PREDIC_JUNE + "_global")
+    guardar_predicciones_finales(resultados_junio["top_k_grupos"], FINAL_PREDIC_JUNE + "_grupos")
+
     
     # Resumen final
     logger.info("=== RESUMEN FINAL ===")
     logger.info(f"Entrenamiento final completado exitosamente")
     logger.info(f"Mejores hiperparámetros utilizados: {mejores_params}")
-    logger.info(f"Períodos de entrenamiento: {FINAL_TRAIN}")
-    logger.info(f"Período de predicción: {FINAL_PREDIC}")
-    # logger.info(f"Archivo de salida: {archivo_salida}")
     logger.info(f"Log detallado: logs/{nombre_log}")
-
-
     logger.info(f">>> Ejecución finalizada. Revisar logs para mas detalles.")
 
 if __name__ == "__main__":
@@ -434,5 +432,31 @@ if __name__ == "__main__":
 
 
     # mejores_params = {'num_leaves': 169, 'learning_rate': 0.01653493811854045, 'min_data_in_leaf': 666, 'feature_fraction': 0.22865878320049338, 'bagging_fraction': 0.7317466615048293, 'num_boost_round': 682}
+
+
+
+    # # 06 Entrenar modelo final (semillerio)
+    # logger.info("=== ENTRENAMIENTO FINAL ===")
+    # logger.info("Preparar datos para entrenamiento final")
+    # X_train, y_train, X_predict, clientes_predict = preparar_datos_entrenamiento_final(df_fe)
+  
+    # # Entrenar modelo final
+    # logger.info("Entrenar modelo final")
+    # _ , modelo_final = entrenar_modelo_final_undersampling(X_train, y_train, X_predict ,mejores_params, SEMILLA, ratio_undersampling = 1)
+
+  
+    # # Generar predicciones finales
+    # logger.info("Generar predicciones finales")
+    # resultados = generar_predicciones_finales(modelo_final, X_predict, clientes_predict, umbral=UMBRAL, top_k=TOP_K)
+
+
+    # # Guardar predicciones
+    # logger.info("Guardar predicciones")
+    # archivo_salida = guardar_predicciones_finales(resultados)
+
+
+
+    # mejores_params = {'bagging_fraction': 0.9366158838759591, 'feature_fraction': 0.6097465146850822, 'lambda_l1': 1.8715916172393408, 'lambda_l2': 0.47499514072885834, 'learning_rate': 0.03421069355219755, 'min_data_in_leaf': 19, 'num_boost_round': 1562, 'num_leaves': 151}
+
 
 
