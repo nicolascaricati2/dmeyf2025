@@ -697,6 +697,8 @@ def generar_predicciones_finales(
     logger.info(f"Cantidad de clientes a predecir: {len(clientes_predict)}")
     logger.info(f"Cantidad de grupos de modelos: {len(modelos_por_grupo)}")
 
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
     predicciones_individuales = []
     resultados_ganancias = []   # <-- aquí guardamos las métricas
     preds_sum_global = np.zeros(len(X_predict), dtype=np.float32)
@@ -750,11 +752,11 @@ def generar_predicciones_finales(
         preds_grupo /= len(modelos)
         preds_por_grupo.append(preds_grupo)
 
-    # Guardar predicciones individuales
-    if predicciones_individuales:
-        df_all_preds = pd.concat(predicciones_individuales, ignore_index=True)
-        df_all_preds.to_csv("predict/predicciones_individuales.csv", index=False)
-        logger.info(f"CSV de predicciones individuales guardado con {len(df_all_preds)} filas")
+    # # Guardar predicciones individuales
+    # if predicciones_individuales:
+    #     df_all_preds = pd.concat(predicciones_individuales, ignore_index=True)
+    #     df_all_preds.to_csv("predict/predicciones_individuales.csv", index=False)
+    #     logger.info(f"CSV de predicciones individuales guardado con {len(df_all_preds)} filas")
 
     # Global
     y_pred_global = preds_sum_global / n_modelos
@@ -764,7 +766,7 @@ def generar_predicciones_finales(
     }).sort_values("probabilidad", ascending=False, ignore_index=True)
     df_topk_global["predict"] = 0
     df_topk_global.loc[:top_k - 1, "predict"] = 1
-    df_topk_global.to_csv("predict/predicciones_global.csv", index=False)
+    df_topk_global.to_csv(f"predict/predicciones_global_{mes}_{timestamp}.csv", index=False)
 
     # Ganancia global
     ganancia_global = ganancia_evaluator(y_pred_global, y_true)
@@ -783,7 +785,7 @@ def generar_predicciones_finales(
     }).sort_values("probabilidad", ascending=False, ignore_index=True)
     df_topk_grupos["predict"] = 0
     df_topk_grupos.loc[:top_k - 1, "predict"] = 1
-    df_topk_grupos.to_csv("predict/predicciones_grupos.csv", index=False)
+    df_topk_grupos.to_csv(f"predict/predicciones_grupos_{mes}_{timestamp}.csv", index=False)
 
     # Ganancia grupos
     ganancia_grupos = ganancia_evaluator(y_pred_grupos, y_true)
@@ -796,8 +798,8 @@ def generar_predicciones_finales(
 
     # Guardar CSV de ganancias
     df_ganancias = pd.DataFrame(resultados_ganancias)
-    df_ganancias.to_csv(f"predict/ganancias_modelos_{mes}.csv", index=False)
-    logger.info(f"✅ CSV de ganancias guardado: predict/ganancias_modelos_{mes}.csv")
+    df_ganancias.to_csv(f"predict/ganancias_modelos_{mes}_{timestamp}.csv", index=False)
+    logger.info(f"✅ CSV de ganancias guardado: predict/ganancias_modelos_{mes}_{timestamp}.csv")
 
     return {
         "top_k_global": df_topk_global,

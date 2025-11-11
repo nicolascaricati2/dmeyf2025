@@ -152,13 +152,6 @@ def main():
         
         df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})  
 
-    
-    
-        # variables_con_drfting =["Visa_Finiciomora","Master_fultimo_cierre","Visa_fultimo_cierre","Master_Finiciomora","cpayroll_trx","mpayroll"]
-    
-        # df_fe = df_fe.drop(columns=variables_con_drfting, errors='ignore')
-
-
         
         logger.info(f"Feature Engineering completado: {df_fe.shape}")
         
@@ -173,35 +166,35 @@ def main():
 
     # 4. Ejecutar optimización (función simple)
     
-    # study = optimizar(df_fe, n_trials=60,study_name = STUDY_NAME ,undersampling = 1.0)
+    study = optimizar(df_fe, n_trials=50,study_name = STUDY_NAME ,undersampling = UNDERSAMPLING_OPTIMIZACION)
   
-    # # 5. Análisis adicional
-    # logger.info("=== ANÁLISIS DE RESULTADOS ===")
+    # 5. Análisis adicional
+    logger.info("=== ANÁLISIS DE RESULTADOS ===")
 
-    # analizar_resultados_optuna()
+    analizar_resultados_optuna()
     
-    # trials_df = study.trials_dataframe()
+    trials_df = study.trials_dataframe()
     
-    # if trials_df is not None and len(trials_df) > 0:
-    #     # Ordenar por valor (mayor ganancia)
-    #     top_5 = trials_df.nlargest(5, 'value')
-    #     logger.info("Top 5 mejores trials:")
+    if trials_df is not None and len(trials_df) > 0:
+        # Ordenar por valor (mayor ganancia)
+        top_5 = trials_df.nlargest(5, 'value')
+        logger.info("Top 5 mejores trials:")
     
-    #     for idx, trial in top_5.iterrows():
-    #         # Extraer parámetros (columnas que empiezan con 'params_')
-    #         params_cols = [c for c in trial.index if c.startswith('params_')]
-    #         if params_cols:
-    #             params = {col.replace('params_', ''): trial[col] for col in params_cols}
-    #         else:
-    #             params = {}
+        for idx, trial in top_5.iterrows():
+            # Extraer parámetros (columnas que empiezan con 'params_')
+            params_cols = [c for c in trial.index if c.startswith('params_')]
+            if params_cols:
+                params = {col.replace('params_', ''): trial[col] for col in params_cols}
+            else:
+                params = {}
     
-    #         logger.info(
-    #             f"Trial {int(trial['number'])}: "
-    #             f"Ganancia = {trial['value']:,.0f} | "
-    #             f"Parámetros: {params}"
-    #         )
-    # else:
-    #     logger.warning("No se encontraron trials para analizar.")
+            logger.info(
+                f"Trial {int(trial['number'])}: "
+                f"Ganancia = {trial['value']:,.0f} | "
+                f"Parámetros: {params}"
+            )
+    else:
+        logger.warning("No se encontraron trials para analizar.")
 
     logger.info("=== OPTIMIZACIÓN COMPLETADA ===")
 
@@ -209,9 +202,9 @@ def main():
 
     # Cargar mejores hiperparámetros
 
-    # mejores_params = cargar_mejores_hiperparametros()
+    mejores_params = cargar_mejores_hiperparametros()
 
-    mejores_params = {'bagging_fraction': 0.648239786, 'feature_fraction': 0.338110921, 'lambda_l1': 3.152084178, 'lambda_l2': 2.623895465, 'learning_rate': 0.074681467, 'min_data_in_leaf': 10, 'num_boost_round': 496, 'num_leaves': 26}    
+    # mejores_params = {'bagging_fraction': 0.648239786, 'feature_fraction': 0.338110921, 'lambda_l1': 3.152084178, 'lambda_l2': 2.623895465, 'learning_rate': 0.074681467, 'min_data_in_leaf': 10, 'num_boost_round': 496, 'num_leaves': 26}    
 
 
     # logger.info("=== EVALUACIÓN EN CONJUNTO DE TEST ===")
