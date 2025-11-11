@@ -40,7 +40,6 @@ competencia01:
   - 202102
   - 202103
   - 202104
-
   GANANCIA_ACIERTO: 780000
   HYPERPARAM_RANGES:
     bagging_fraction:
@@ -339,6 +338,7 @@ competencia01:
     - 202010
     - 202011
     - 202012
+
   FINAL_TRAINING_GROUPS_JUNE:
     rolling_01:
     - 201901
@@ -464,6 +464,7 @@ competencia01:
     - 202010
     - 202011
     - 202012
+
  FINAL_TRAINING_GROUPS_APRIL:
     rolling_01:
     - 201901
