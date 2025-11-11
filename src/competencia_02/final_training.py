@@ -675,8 +675,9 @@ def generar_predicciones_finales(
     logger.info(f"CSV de grupos guardado con {len(df_topk_grupos)} filas")
 
     logger.info("Generación de predicciones finales completada exitosamente")
-
+    
     return {
-        "top_k_global": df_topk_global[["numero_de_cliente", "predict"]],
-        "top_k_grupos": df_topk_grupos[["numero_de_cliente", "predict"]]
+        "top_k_global": df_topk_global,
+        "top_k_grupos": df_topk_grupos
     }
+
