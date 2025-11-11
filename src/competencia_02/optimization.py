@@ -244,7 +244,7 @@ def objetivo_ganancia_ensamble(trial, df, undersampling=0.2) -> float:
     y_train = df_train['target']
 
     X_val = df_val.drop(columns=['target', 'target_to_calculate_gan'])
-    y_val = df_val['target']
+    y_val = df_val['target_to_calculate_gan']
 
     # Rango por defecto de hiperparámetros
     DEFAULT_HYPERPARAMS = {
