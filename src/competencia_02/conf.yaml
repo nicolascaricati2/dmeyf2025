@@ -464,8 +464,7 @@ competencia01:
     - 202010
     - 202011
     - 202012
-
- FINAL_TRAINING_GROUPS_APRIL:
+  FINAL_TRAINING_GROUPS_APRIL:
     rolling_01:
     - 201901
     - 201902
