@@ -24,6 +24,8 @@ try:
         COSTO_ESTIMULO = _cfg.get("COSTO_ESTIMULO", None)
         FINAL_TRAIN = _cfg.get("FINAL_TRAIN", [202101, 202102, 202103, 202104])
         FINAL_PREDIC = _cfg.get("FINAL_PREDIC", 202106)
+        FINAL_PREDIC_JUNE = _cfg.get("FINAL_PREDIC_JUNE", 202106)
+        FINAL_PREDIC_APRIL = _cfg.get("FINAL_PREDIC_APRIL", 202104)  
         UMBRAL = _cfg.get("UMBRAL", 0.04)
         HYPERPARAM_RANGES = _cfg.get("HYPERPARAM_RANGES", {})
         TOP_K = _cfg.get("TOP_K", 10000)
