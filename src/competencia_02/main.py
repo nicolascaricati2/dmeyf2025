@@ -1,4 +1,24 @@
 # main
+
+
+### Configuración de logging ###
+fecha = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+nombre_log = f"/{STUDY_NAME}/log_{STUDY_NAME}_{fecha}.log"
+bucket_name = BUCKET_NAME
+os.makedirs(f"{bucket_name}/{STUDY_NAME}", exist_ok=True)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(name)s %(lineno)d - %(message)s",
+    handlers=[
+        logging.FileHandler(bucket_name + nombre_log),
+        logging.StreamHandler()
+    ]
+)
+
+logger = logging.getLogger(__name__)
+logger.info("Iniciando programa de optimización con log fechado")
+
+
 import logging
 from datetime import datetime
 import os
@@ -21,23 +41,6 @@ from snapshot import *
 from undersampling import undersample_clientes
 from analisis_optuna import *
 
-
-### Configuración de logging ###
-fecha = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-nombre_log = f"/{STUDY_NAME}/log_{STUDY_NAME}_{fecha}.log"
-bucket_name = BUCKET_NAME
-os.makedirs(f"{bucket_name}/{STUDY_NAME}", exist_ok=True)
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(name)s %(lineno)d - %(message)s",
-    handlers=[
-        logging.FileHandler(bucket_name + nombre_log),
-        logging.StreamHandler()
-    ]
-)
-
-logger = logging.getLogger(__name__)
-logger.info("Iniciando programa de optimización con log fechado")
 
 ### Manejo de Configuración en YAML ###
 logger.info("Configuración cargada desde YAML")

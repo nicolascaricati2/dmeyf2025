@@ -185,7 +185,7 @@ def objetivo_ganancia_ensamble(trial, df, undersampling=0.2) -> float:
     # Hiperparámetros y configuración general
     semillas = SEMILLA
     mes_train = MES_TRAIN
-    mes_validacion = MES_VALIDATION
+    mes_validacion = MES_VALIDACION
 
     # Dividir datos en train y validación
     df_train = df[df['foto_mes'].isin(mes_train)].copy()
