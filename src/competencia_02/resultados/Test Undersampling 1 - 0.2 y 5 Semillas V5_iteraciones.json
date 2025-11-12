@@ -1518,5 +1518,125 @@
         202104
       ]
     }
+  },
+  {
+    "trial_number": 38,
+    "params": {
+      "num_leaves": 55,
+      "learning_rate": 0.07619538014854868,
+      "min_data_in_leaf": 91,
+      "feature_fraction": 0.44647701387560923,
+      "bagging_fraction": 0.5708394662028937,
+      "lambda_l1": 2.3559414276372097,
+      "lambda_l2": 1.9881285720082733,
+      "num_boost_round": 806
+    },
+    "value": 935200000.0,
+    "datetime": "2025-11-12T00:05:30.695123",
+    "state": "COMPLETE",
+    "configuracion": {
+      "semilla": [
+        555557,
+        555871,
+        556219,
+        556459,
+        556691
+      ],
+      "mes_train": [
+        202003,
+        202004,
+        202005,
+        202007,
+        202008,
+        202009,
+        202010,
+        202011,
+        202012,
+        202101
+      ],
+      "mes_validacion": [
+        202104
+      ]
+    }
+  },
+  {
+    "trial_number": 39,
+    "params": {
+      "num_leaves": 30,
+      "learning_rate": 0.06180004303633123,
+      "min_data_in_leaf": 88,
+      "feature_fraction": 0.37414105564735434,
+      "bagging_fraction": 0.6616533984724603,
+      "lambda_l1": 0.8594889146453899,
+      "lambda_l2": 2.5305418064766316,
+      "num_boost_round": 212
+    },
+    "value": 936000000.0,
+    "datetime": "2025-11-12T00:16:25.827183",
+    "state": "COMPLETE",
+    "configuracion": {
+      "semilla": [
+        555557,
+        555871,
+        556219,
+        556459,
+        556691
+      ],
+      "mes_train": [
+        202003,
+        202004,
+        202005,
+        202007,
+        202008,
+        202009,
+        202010,
+        202011,
+        202012,
+        202101
+      ],
+      "mes_validacion": [
+        202104
+      ]
+    }
+  },
+  {
+    "trial_number": 40,
+    "params": {
+      "num_leaves": 63,
+      "learning_rate": 0.0933463660483243,
+      "min_data_in_leaf": 100,
+      "feature_fraction": 0.31091020733277763,
+      "bagging_fraction": 0.5287783364229638,
+      "lambda_l1": 1.9522056881097176,
+      "lambda_l2": 1.7692606859658555,
+      "num_boost_round": 710
+    },
+    "value": 941600000.0,
+    "datetime": "2025-11-12T00:28:11.464644",
+    "state": "COMPLETE",
+    "configuracion": {
+      "semilla": [
+        555557,
+        555871,
+        556219,
+        556459,
+        556691
+      ],
+      "mes_train": [
+        202003,
+        202004,
+        202005,
+        202007,
+        202008,
+        202009,
+        202010,
+        202011,
+        202012,
+        202101
+      ],
+      "mes_validacion": [
+        202104
+      ]
+    }
   }
 ]
