@@ -11,7 +11,7 @@ from gain_function import calcular_ganancia, ganancia_lgb_binary, ganancia_evalu
 
 
 logging.basicConfig(
-    level=logging.DEBUG,  # para ver mensajes DEBUG o superiores
+    level=logging.INFO,  # para ver mensajes DEBUG o superiores
     format='%(asctime)s - %(levelname)s - %(message)s',
 )
 
