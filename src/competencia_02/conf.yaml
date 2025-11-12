@@ -1,5 +1,5 @@
 #yaml
-STUDY_NAME: Test Undersampling 1 - 0.2 y 5 Semillas V7
+STUDY_NAME: Test Undersampling 1 - 0.2 y 5 Semillas V8
 competencia01:
   BUCKET_NAME: ../../../buckets/b1/Compe_02
   COSTO_ESTIMULO: 20000
