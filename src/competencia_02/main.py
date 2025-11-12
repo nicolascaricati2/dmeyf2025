@@ -1,6 +1,16 @@
 # main
 
 
+import logging
+from datetime import datetime
+import os
+import pandas as pd
+import numpy as np
+import polars as pl
+from config import *
+import re
+from snapshot import *
+
 ### Configuración de logging ###
 fecha = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 nombre_log = f"/{STUDY_NAME}/log_{STUDY_NAME}_{fecha}.log"
@@ -19,25 +29,15 @@ logger = logging.getLogger(__name__)
 logger.info("Iniciando programa de optimización con log fechado")
 
 
-import logging
-from datetime import datetime
-import os
-import pandas as pd
-import numpy as np
-import polars as pl
 from features import feature_engineering_lag, feature_engineering_delta, feature_engineering_regr_slope_window, feature_engineering_ratio, feature_engineering_tc_total, generar_ctrx_features, feature_engineering_cpayroll_trx_corregida, feature_engineering_mpayroll_corregida, variables_aux,feature_engineering_robust_by_month_polars,ajustar_por_ipc, detectar_grupo_excluido, detectar_variable_excluida, imputar_ceros_por_mes_anterior, generar_cambios_de_pendiente_multiples_fast, feature_engineering_delta_max, feature_engineering_delta_mean
 from loader import cargar_datos, convertir_clase_ternaria_a_target
 from optimization import *
-from best_params import cargar_mejores_hiperparametros
+from best_params import cargar_mejores_hiperparametros, obtener_estadisticas_optuna
 from final_training import *
 from output_manager import guardar_predicciones_finales
-from best_params import obtener_estadisticas_optuna
-from config import *
 from test import *
 from grafico_test import *
-import re
 from evaluar_meses_test import evaluar_meses_test
-from snapshot import *
 from undersampling import undersample_clientes
 from analisis_optuna import *
 
