@@ -6,7 +6,7 @@ import numpy as np
 import logging
 import os
 from datetime import datetime
-from config import FINAL_TRAIN, FINAL_PREDIC, SEMILLA, STUDY_NAME
+from config import FINAL_TRAIN, FINAL_PREDIC, SEMILLA, STUDY_NAME, BUCKET_NAME
 from best_params import cargar_mejores_hiperparametros
 from gain_function import ganancia_lgb_binary, ganancia_evaluator
 from typing import Tuple

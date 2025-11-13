@@ -237,7 +237,7 @@ def objetivo_ganancia_ensamble(trial, df, undersampling=0.2) -> float:
             logger.info(f"  Mes {mes}: {dist}")
     
     else:
-        logger.debug("Sin undersampling: se usan todos los clientes en train.")
+        logger.info("Sin undersampling: se usan todos los clientes en train.")
 
     # Separar características y target
     X_train = df_train.drop(columns=['target', 'target_to_calculate_gan'])
