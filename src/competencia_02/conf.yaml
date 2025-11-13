@@ -1,5 +1,5 @@
 #yaml
-STUDY_NAME: Test Undersampling 0.5 13-11 - 5 Semillas 
+STUDY_NAME: Test Undersampling 0.5 13-11 - 1 Semilla
 competencia01:
   BUCKET_NAME: ../../../buckets/b1/Compe_02
   COSTO_ESTIMULO: 20000
@@ -192,10 +192,10 @@ competencia01:
   MES_VALIDACION: [202103,202104]
   SEMILLA:
   - 555557
-  - 555871
-  - 556219
-  - 556459
-  - 556691
+  # - 555871
+  # - 556219
+  # - 556459
+  # - 556691
   # - 556903
   # - 557159
   # - 557399
