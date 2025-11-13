@@ -706,7 +706,7 @@ def generar_predicciones_finales(
     preds_por_grupo = []
 
     # Etiquetas verdaderas (para calcular ganancia)
-    y_true = df_predict["target"].values
+    y_true = df_predict["target_to_calculate_gan"].values
 
     for nombre_grupo, modelos in modelos_por_grupo.items():
         logger.info(f"Procesando grupo: {nombre_grupo} con {len(modelos)} modelos")
