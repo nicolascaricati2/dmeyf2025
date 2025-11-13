@@ -8,7 +8,7 @@ import os
 from datetime import datetime
 from config import FINAL_TRAIN, FINAL_PREDIC, SEMILLA, STUDY_NAME, BUCKET_NAME
 from best_params import cargar_mejores_hiperparametros
-from gain_function import ganancia_lgb_binary, ganancia_evaluator
+from gain_function import ganancia_lgb_binary, ganancia_evaluator,calcular_ganancia_top_k
 from typing import Tuple
 from undersampling import undersample_clientes
 
@@ -770,7 +770,7 @@ def generar_predicciones_finales(
     df_topk_global.to_csv(f"{BUCKET_NAME}/{STUDY_NAME}/predicciones_global_{mes}_{timestamp}.csv", index=False)    
 
     # Ganancia global
-    ganancia_global = ganancia_evaluator(y_pred_global, y_true)
+    ganancia_global = calcular_ganancia_top_k(y_pred_global, y_true,top_k)
     resultados_ganancias.append({
         "mes": mes,
         "grupo": "GLOBAL",

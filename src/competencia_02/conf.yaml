@@ -211,7 +211,7 @@ competencia01:
   # - 557392
   # - 557593
   # - 557860
-  TOP_K: 11750
+  TOP_K: 10000
   UMBRAL: 0.015
   FINAL_TRAINING_GROUPS:
     rolling_01:
