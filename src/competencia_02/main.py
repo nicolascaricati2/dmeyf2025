@@ -169,35 +169,35 @@ def main():
 
     # 4. Ejecutar optimización (función simple)
     
-    # study = optimizar(df_fe, n_trials=50,study_name = STUDY_NAME ,undersampling = UNDERSAMPLING_OPTIMIZACION)
+    study = optimizar(df_fe, n_trials=50,study_name = STUDY_NAME ,undersampling = UNDERSAMPLING_OPTIMIZACION)
   
     # 5. Análisis adicional
-    # logger.info("=== ANÁLISIS DE RESULTADOS ===")
+    logger.info("=== ANÁLISIS DE RESULTADOS ===")
 
-    # analizar_resultados_optuna()
+    analizar_resultados_optuna()
     
-    # trials_df = study.trials_dataframe()
+    trials_df = study.trials_dataframe()
     
-    # if trials_df is not None and len(trials_df) > 0:
-    #     # Ordenar por valor (mayor ganancia)
-    #     top_5 = trials_df.nlargest(5, 'value')
-    #     logger.info("Top 5 mejores trials:")
+    if trials_df is not None and len(trials_df) > 0:
+        # Ordenar por valor (mayor ganancia)
+        top_5 = trials_df.nlargest(5, 'value')
+        logger.info("Top 5 mejores trials:")
     
-    #     for idx, trial in top_5.iterrows():
-    #         # Extraer parámetros (columnas que empiezan con 'params_')
-    #         params_cols = [c for c in trial.index if c.startswith('params_')]
-    #         if params_cols:
-    #             params = {col.replace('params_', ''): trial[col] for col in params_cols}
-    #         else:
-    #             params = {}
+        for idx, trial in top_5.iterrows():
+            # Extraer parámetros (columnas que empiezan con 'params_')
+            params_cols = [c for c in trial.index if c.startswith('params_')]
+            if params_cols:
+                params = {col.replace('params_', ''): trial[col] for col in params_cols}
+            else:
+                params = {}
     
-    #         logger.info(
-    #             f"Trial {int(trial['number'])}: "
-    #             f"Ganancia = {trial['value']:,.0f} | "
-    #             f"Parámetros: {params}"
-    #         )
-    # else:
-    #     logger.warning("No se encontraron trials para analizar.")
+            logger.info(
+                f"Trial {int(trial['number'])}: "
+                f"Ganancia = {trial['value']:,.0f} | "
+                f"Parámetros: {params}"
+            )
+    else:
+        logger.warning("No se encontraron trials para analizar.")
 
     logger.info("=== OPTIMIZACIÓN COMPLETADA ===")
 
