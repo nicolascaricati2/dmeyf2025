@@ -766,7 +766,7 @@ def generar_predicciones_finales(
     }).sort_values("probabilidad", ascending=False, ignore_index=True)
     df_topk_global["predict"] = 0
     df_topk_global.loc[:top_k - 1, "predict"] = 1
-    df_topk_global.to_csv(f"predict/predicciones_global_{mes}_{timestamp}.csv", index=False)
+    df_topk_global.to_csv(f"predict/{STUDY_NAME}_predicciones_global_{mes}_{timestamp}.csv", index=False)
 
     # Ganancia global
     ganancia_global = calcular_ganancia_top_k(y_true,y_pred_global)
@@ -785,7 +785,7 @@ def generar_predicciones_finales(
     }).sort_values("probabilidad", ascending=False, ignore_index=True)
     df_topk_grupos["predict"] = 0
     df_topk_grupos.loc[:top_k - 1, "predict"] = 1
-    df_topk_grupos.to_csv(f"predict/predicciones_grupos_{mes}_{timestamp}.csv", index=False)
+    df_topk_grupos.to_csv(f"predict/{STUDY_NAME}_predicciones_grupos_{mes}_{timestamp}.csv", index=False)
 
     # Ganancia grupos
     ganancia_grupos = calcular_ganancia_top_k(y_true,y_pred_grupos)
@@ -799,7 +799,7 @@ def generar_predicciones_finales(
     # Guardar CSV de ganancias
     df_ganancias = pd.DataFrame(resultados_ganancias)
     df_ganancias.to_csv(f"predict/ganancias_modelos_{mes}_{timestamp}.csv", index=False)
-    logger.info(f"✅ CSV de ganancias guardado: predict/ganancias_modelos_{mes}_{timestamp}.csv")
+    logger.info(f"✅ CSV de ganancias guardado: predict/{STUDY_NAME}_ganancias_modelos_{mes}_{timestamp}.csv")
 
     return {
         "top_k_global": df_topk_global,
