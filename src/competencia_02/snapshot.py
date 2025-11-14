@@ -16,7 +16,7 @@ def crear_snapshot_modelo(study_name: str, archivos_extra: list[str] = None) -> 
     """
     # Crear carpeta con timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    carpeta_modelo = f"../../../buckets/b1/Compe_02/{study_name}_{timestamp}"
+    carpeta_modelo = f"../../../buckets/b1/Compe_02/{study_name}"
     os.makedirs(carpeta_modelo, exist_ok=True)
 
     logger = logging.getLogger(__name__)
