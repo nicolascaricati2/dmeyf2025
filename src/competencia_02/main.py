@@ -279,8 +279,8 @@ def main():
         df_fe,
         FINAL_TRAINING_GROUPS_JUNE,
         FINAL_PREDIC_JUNE,
-        undersampling_ratio=UNDERSAMPLING_ENTRENAMIENTO_ENSAMBLE
-        # semillas=SEMILLA
+        undersampling_ratio=UNDERSAMPLING_ENTRENAMIENTO_ENSAMBLE,
+        semillas=SEMILLA
     )
     
     # Preparar datos de predicción
