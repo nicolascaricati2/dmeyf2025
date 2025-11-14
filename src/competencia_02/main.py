@@ -109,7 +109,7 @@ def main():
         # df_fe = imputar_ceros_por_mes_anterior(df_fe, columnas_no_imputar=['target','target_to_calculate_gan'])
 
         # Excluyo Comisiones Otras 
-        df_fe = df_fe.drop(columns=['ccomisiones_otras','internet'],'mprestamos_personales','cprestamos_personales')
+        df_fe = df_fe.drop(columns=['ccomisiones_otras','internet','mprestamos_personales','cprestamos_personales'])
         
         # Agrego Variables para controlar mejor continuidad
         df_fe = generar_ctrx_features(df_fe)        
