@@ -9,33 +9,20 @@ logger = logging.getLogger(__name__)
 def calcular_ganancia(y_true, y_pred):
     """
     Calcula la ganancia total usando la función de ganancia de la competencia.
- 
-    Args:
-        y_true: Valores reales (0 o 1)
-        y_pred: Predicciones (0 o 1)
-  
-    Returns:
-        float: Ganancia total
     """
-    # Convertir a numpy arrays si es necesario
     if isinstance(y_true, pd.Series):
         y_true = y_true.values
     if isinstance(y_pred, pd.Series):
         y_pred = y_pred.values
-  
-    # Calcular ganancia vectorizada usando configuración
-    # Verdaderos positivos: y_true=1 y y_pred=1 -> ganancia
-    # Falsos positivos: y_true=0 y y_pred=1 -> costo
-    # Verdaderos negativos y falsos negativos: ganancia = 0
-  
+
+    assert len(y_true) == len(y_pred), "Error: y_true y y_pred tienen distinta longitud"
+
     ganancia_total = np.sum(
-        ((y_true == 1) & (y_pred == 1)) * GANANCIA_ACIERTO +  # TP
-        ((y_true == 0) & (y_pred == 1)) * (-COSTO_ESTIMULO)   # FP
+        ((y_true == 1) & (y_pred == 1)) * GANANCIA_ACIERTO +
+        ((y_true == 0) & (y_pred == 1)) * (-COSTO_ESTIMULO)
     )
-  
-    logger.debug(f"Ganancia calculada: {ganancia_total:,.0f} "
-                f"(GANANCIA_ACIERTO={GANANCIA_ACIERTO}, COSTO_ESTIMULO={COSTO_ESTIMULO})")
-  
+
+    logger.debug(f"Ganancia calculada: {ganancia_total:,.0f} (TP={((y_true == 1) & (y_pred == 1)).sum()}, FP={((y_true == 0) & (y_pred == 1)).sum()})")
     return ganancia_total
 
 def ganancia_lgb_binary(y_pred, y_true):
@@ -123,33 +110,26 @@ def ganancia_evaluator(y_pred, y_true) -> float:
 def calcular_ganancia_top_k(y_true, y_pred_proba, k=10000):
     """
     Calcula la ganancia total considerando como positivos los k casos con mayor probabilidad.
-    
-    Args:
-        y_true (array-like): Valores reales (0 o 1)
-        y_pred_proba (array-like): Probabilidades de predicción (float entre 0 y 1)
-        k (int): Cantidad de casos que se marcan como positivos
-    
-    Returns:
-        float: Ganancia total
     """
-    # Convertir a numpy arrays si es necesario
     if isinstance(y_true, pd.Series):
         y_true = y_true.values
     if isinstance(y_pred_proba, pd.Series):
         y_pred_proba = y_pred_proba.values
 
-    # Inicializar predicciones en 0
-    y_pred_bin = np.zeros_like(y_pred_proba, dtype=int)
+    assert len(y_true) == len(y_pred_proba), "Error: y_true y y_pred_proba tienen distinta longitud"
 
-    # Índices de los k casos con mayor probabilidad
-    idx_top_k = np.argpartition(y_pred_proba, -k)[-k:]
-    
-    # Marcar esos casos como 1
-    y_pred_bin[idx_top_k] = 1
+    df = pd.DataFrame({
+        "y_true": y_true,
+        "y_pred_proba": y_pred_proba
+    }).sort_values("y_pred_proba", ascending=False).reset_index(drop=True)
 
-    # Calcular ganancia usando la función que ya tenés
-    ganancia_total = calcular_ganancia(y_true, y_pred_bin)
-    
+    df["predict"] = 0
+    df.loc[:k - 1, "predict"] = 1
+
+    tp = ((df["y_true"] == 1) & (df["predict"] == 1)).sum()
+    fp = ((df["y_true"] == 0) & (df["predict"] == 1)).sum()
+
+    ganancia_total = tp * GANANCIA_ACIERTO - fp * COSTO_ESTIMULO
+
+    logger.debug(f"Ganancia top_k={k}: TP={tp}, FP={fp}, Total={ganancia_total:,.0f}")
     return ganancia_total
-
-
