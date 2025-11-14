@@ -1,12 +1,12 @@
 #yaml
-STUDY_NAME: Resultados Abril y Junio - US 0.2 - 8 Semillas pero Saco periodos malos 14 11
+STUDY_NAME: Resultados Abril y Junio - Modelo Base
 competencia01:
   BUCKET_NAME: ../../../buckets/b1/Compe_02
   COSTO_ESTIMULO: 20000
   DATA_PATH: ../../../datasets/competencia_02_crudo.csv.gz
   UNDERSAMPLING: 1
-  UNDERSAMPLING_OPTIMIZACION: 0.2
-  UNDERSAMPLING_ENTRENAMIENTO_ENSAMBLE: 0.2
+  UNDERSAMPLING_OPTIMIZACION: 1
+  UNDERSAMPLING_ENTRENAMIENTO_ENSAMBLE: 1
   UNDERSAMPLING_MODELO_FINAL: 1  
   FINAL_PREDIC: 202106
   FINAL_PREDIC_JUNE: 202106
@@ -361,20 +361,20 @@ competencia01:
     - 201912
     - 202003
     - 202004
-    # rolling_04:
-    # - 202007
-    # - 202008
-    # - 202009
-    # - 202010
-    # - 202011
-    # - 202012
-    # rolling_05:
-    # - 202010
-    # - 202011
-    # - 202012
-    # - 202101
-    # - 202102
-    # - 202103
+    rolling_04:
+    - 202007
+    - 202008
+    - 202009
+    - 202010
+    - 202011
+    - 202012
+    rolling_05:
+    - 202010
+    - 202011
+    - 202012
+    - 202101
+    - 202102
+    - 202103
     rolling_06:
     - 201906
     - 201907
@@ -383,14 +383,14 @@ competencia01:
     - 201911
     - 201912
     - 202003
-    # rolling_07:
-    # - 202003
-    # - 202004
-    # - 202005
-    # - 202007
-    # - 202008
-    # - 202009
-    # - 202010
+    rolling_07:
+    - 202003
+    - 202004
+    - 202005
+    - 202007
+    - 202008
+    - 202009
+    - 202010
     seasonal_summer:
     - 201901
     - 202001
@@ -403,10 +403,10 @@ competencia01:
     - 201906
     - 202006
     - 202007
-    # seasonal_spring:
-    # - 201909
-    # - 202009
-    # - 202010
+    seasonal_spring:
+    - 201909
+    - 202009
+    - 202010
     seasonal_end_of_year:
     - 201912
     - 202012
@@ -423,30 +423,30 @@ competencia01:
     - 201906
     - 202004
     - 202005
-    # mixed_recent_01:
-    # - 202011
-    # - 202012
-    # - 202101
-    # - 202102
-    # - 202103
-    # mixed_recent_02:
-    # - 202007
-    # - 202008
-    # - 202009
-    # - 202010
-    # - 202011
-    # mixed_early_01:
-    # - 201901
-    # - 201902
-    # - 201903
-    # - 201906
-    # - 201907
-    # mixed_early_02:
-    # - 201908
-    # - 201909
-    # - 201911
-    # - 201912
-    # - 202003
+    mixed_recent_01:
+    - 202011
+    - 202012
+    - 202101
+    - 202102
+    - 202103
+    mixed_recent_02:
+    - 202007
+    - 202008
+    - 202009
+    - 202010
+    - 202011
+    mixed_early_01:
+    - 201901
+    - 201902
+    - 201903
+    - 201906
+    - 201907
+    mixed_early_02:
+    - 201908
+    - 201909
+    - 201911
+    - 201912
+    - 202003
     mixed_transition:
     - 202003
     - 202004
