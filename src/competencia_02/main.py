@@ -101,9 +101,9 @@ def main():
     
         # # 2. Feature Engineering
         # # Excluyo meses problematicos
-        meses_excluir = [202006]
-        df_fe = df_fe[~df_fe["foto_mes"].isin(meses_excluir)].copy()
-        logger.info(f"Después de excluir meses problemáticos: {df_fe.shape}")
+        # meses_excluir = [202006]
+        # df_fe = df_fe[~df_fe["foto_mes"].isin(meses_excluir)].copy()
+        # logger.info(f"Después de excluir meses problemáticos: {df_fe.shape}")
 
         # Imputacion para corregir 0s
         df_fe = imputar_ceros_por_mes_anterior(df_fe, columnas_no_imputar=['target','target_to_calculate_gan'])
@@ -213,7 +213,8 @@ def main():
     # mejores_params =  {'num_leaves': 106, 'learning_rate': 0.05318395463346495, 'min_data_in_leaf': 4, 'feature_fraction': 0.49759556652323156, 'bagging_fraction': 0.7176155814161423, 'lambda_l1': 4.792320092280481, 'lambda_l2': 2.275425835398769, 'num_boost_round': 679} # Opti con 0.05 de US
     
     # Nueva Opti de 0.2
-    mejores_params = {'num_leaves': 121, 'learning_rate': 0.08944748172892189, 'min_data_in_leaf': 47, 'feature_fraction': 0.5831901957235187, 'bagging_fraction': 0.9395824062687965, 'lambda_l1': 4.4131882397060185, 'lambda_l2': 2.385519727758512, 'num_boost_round': 818}
+    # mejores_params = {'num_leaves': 121, 'learning_rate': 0.08944748172892189, 'min_data_in_leaf': 47, 'feature_fraction': 0.5831901957235187, 'bagging_fraction': 0.9395824062687965, 'lambda_l1': 4.4131882397060185, 'lambda_l2': 2.385519727758512, 'num_boost_round': 818}
+    mejores_params = {'num_leaves': 121, 'learning_rate': 0.08944748172892189, 'min_data_in_leaf': 47, 'feature_fraction': 0.5831901957235187, 'bagging_fraction': 0.9395824062687965, 'num_boost_round': 818}
     
 
 

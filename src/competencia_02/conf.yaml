@@ -1,5 +1,5 @@
 #yaml
-STUDY_NAME: Resultados Abril y Junio - US 0.2 y 3 Semillas + Opti (Sacando 202006 del FE 15 11
+STUDY_NAME: Resultados Abril y Junio - US 0.2 y 3 Semillas + Opti - Agrego 202006 Nuevamente pero saco Lamdas de Parametros
 competencia01:
   BUCKET_NAME: ../../../buckets/b1/Compe_02
   COSTO_ESTIMULO: 20000
