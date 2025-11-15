@@ -1,5 +1,5 @@
 #yaml
-STUDY_NAME: Resultados Experimentos 15 11: US 0.5
+STUDY_NAME: Resultados Experimentos 15 11 - US 0.5
 competencia01:
   BUCKET_NAME: ../../../buckets/b1/Compe_02
   COSTO_ESTIMULO: 20000
