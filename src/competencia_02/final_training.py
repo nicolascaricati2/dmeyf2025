@@ -799,6 +799,7 @@ def generar_predicciones_finales(
     # Guardar CSV de ganancias
     df_ganancias = pd.DataFrame(resultados_ganancias)
     df_ganancias.to_csv(f"predict/ganancias_modelos_{mes}_{timestamp}.csv", index=False)
+    df_ganancias.to_csv(f"../../../buckets/b1/Compe_02/{STUDY_NAME}/ganancias_modelos_{mes}_{timestamp}.csv", index=False)    
     logger.info(f"✅ CSV de ganancias guardado: predict/{STUDY_NAME}_ganancias_modelos_{mes}_{timestamp}.csv")
 
     return {
