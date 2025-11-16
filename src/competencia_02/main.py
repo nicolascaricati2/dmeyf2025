@@ -111,8 +111,8 @@ def main():
         # Excluyo Comisiones Otras 
         df_fe = df_fe.drop(columns=['ccomisiones_otras','internet'])
         
-        # Agrego Variables para controlar mejor continuidad
-        df_fe = generar_ctrx_features(df_fe)        
+        # # Agrego Variables para controlar mejor continuidad
+        # df_fe = generar_ctrx_features(df_fe)        
 
         # Excluyo las variables no corregidas          
         cols_ajustar_ipc = [
@@ -167,45 +167,45 @@ def main():
     logger.info("⏳ CSV cargado o creado, ahora ejecutando optimización...")
 
 
-    # 4. Ejecutar optimización (función simple)
+    # # 4. Ejecutar optimización (función simple)
     
-    study = optimizar(df_fe, n_trials=100,study_name = STUDY_NAME ,undersampling = UNDERSAMPLING_OPTIMIZACION)
+    # study = optimizar(df_fe, n_trials=100,study_name = STUDY_NAME ,undersampling = UNDERSAMPLING_OPTIMIZACION)
   
-    # 5. Análisis adicional
-    logger.info("=== ANÁLISIS DE RESULTADOS ===")
+    # # 5. Análisis adicional
+    # logger.info("=== ANÁLISIS DE RESULTADOS ===")
 
-    analizar_resultados_optuna()
+    # analizar_resultados_optuna()
     
-    trials_df = study.trials_dataframe()
+    # trials_df = study.trials_dataframe()
     
-    if trials_df is not None and len(trials_df) > 0:
-        # Ordenar por valor (mayor ganancia)
-        top_5 = trials_df.nlargest(5, 'value')
-        logger.info("Top 5 mejores trials:")
+    # if trials_df is not None and len(trials_df) > 0:
+    #     # Ordenar por valor (mayor ganancia)
+    #     top_5 = trials_df.nlargest(5, 'value')
+    #     logger.info("Top 5 mejores trials:")
     
-        for idx, trial in top_5.iterrows():
-            # Extraer parámetros (columnas que empiezan con 'params_')
-            params_cols = [c for c in trial.index if c.startswith('params_')]
-            if params_cols:
-                params = {col.replace('params_', ''): trial[col] for col in params_cols}
-            else:
-                params = {}
+    #     for idx, trial in top_5.iterrows():
+    #         # Extraer parámetros (columnas que empiezan con 'params_')
+    #         params_cols = [c for c in trial.index if c.startswith('params_')]
+    #         if params_cols:
+    #             params = {col.replace('params_', ''): trial[col] for col in params_cols}
+    #         else:
+    #             params = {}
     
-            logger.info(
-                f"Trial {int(trial['number'])}: "
-                f"Ganancia = {trial['value']:,.0f} | "
-                f"Parámetros: {params}"
-            )
-    else:
-        logger.warning("No se encontraron trials para analizar.")
+    #         logger.info(
+    #             f"Trial {int(trial['number'])}: "
+    #             f"Ganancia = {trial['value']:,.0f} | "
+    #             f"Parámetros: {params}"
+    #         )
+    # else:
+    #     logger.warning("No se encontraron trials para analizar.")
 
-    logger.info("=== OPTIMIZACIÓN COMPLETADA ===")
+    # logger.info("=== OPTIMIZACIÓN COMPLETADA ===")
 
     #  05 Test en mes desconocido
 
     # Cargar mejores hiperparámetros
 
-    mejores_params = cargar_mejores_hiperparametros()
+    # mejores_params = cargar_mejores_hiperparametros()
 
     # mejores_params = {'bagging_fraction': 0.648239786, 'feature_fraction': 0.338110921, 'lambda_l1': 3.152084178, 'lambda_l2': 2.623895465, 'learning_rate': 0.074681467, 'min_data_in_leaf': 10, 'num_boost_round': 496, 'num_leaves': 26} # Opti sin US
     # mejores_params = {'num_leaves': 86, 'learning_rate': 0.04515219676722008, 'min_data_in_leaf': 45, 'feature_fraction': 0.2783670269042045, 'bagging_fraction': 0.68927175577007, 'lambda_l1': 1.4668038650423412, 'lambda_l2': 4.8010252173774495, 'num_boost_round': 507} # Opti con 0.2 de US
@@ -215,6 +215,9 @@ def main():
     # Nueva Opti de 0.2
     # mejores_params = {'num_leaves': 121, 'learning_rate': 0.08944748172892189, 'min_data_in_leaf': 47, 'feature_fraction': 0.5831901957235187, 'bagging_fraction': 0.9395824062687965, 'lambda_l1': 4.4131882397060185, 'lambda_l2': 2.385519727758512, 'num_boost_round': 818}
     # mejores_params = {'num_leaves': 121, 'learning_rate': 0.08944748172892189, 'min_data_in_leaf': 47, 'feature_fraction': 0.5831901957235187, 'bagging_fraction': 0.9395824062687965, 'num_boost_round': 818}
+
+
+    mejores_params = {'bagging_fraction': 0.288604819, 'feature_fraction': 0.727451551, 'lambda_l1': 1.573915301, 'lambda_l2': 3.131842205, 'learning_rate': 0.036350067, 'min_data_in_leaf': 13, 'num_boost_round': 779, 'num_leaves': 115} # Opti Nueva
     
 
 
@@ -313,12 +316,57 @@ def main():
     resultados_junio["ganancias"].to_csv(f"predict/ganancias_{STUDY_NAME}_{FINAL_PREDIC_JUNE}.csv", index=False)
     logger.info(f"✅ CSV de ganancias guardado: predict/ganancias_{STUDY_NAME}_{FINAL_PREDIC_JUNE}.csv")
 
+
+    
+    # Entrenamiento en Agosto
+    logger.info("=== ENTRENAMIENTO FINAL AGOSTO ===")
+    
+    # Preparar datos por grupo y semilla con undersampling
+    grupos_datos_agosto = preparar_datos_entrenamiento_por_grupos_por_semilla(
+        df_fe,
+        FINAL_TRAINING_GROUPS_AGOSTO,
+        FINAL_PREDIC_AGOSTO,
+        undersampling_ratio=UNDERSAMPLING_ENTRENAMIENTO_ENSAMBLE,
+        semillas=SEMILLA
+    )
+    
+    # Preparar datos de predicción
+    df_predict_agosto = df_fe[df_fe["foto_mes"] == FINAL_PREDIC_AGOSTO]
+    X_predict_agosto = df_predict_agosto.drop(columns=["target", "target_to_calculate_gan"])
+    clientes_predict_agosto = df_predict_agosto["numero_de_cliente"].values
+    
+    # Entrenar modelos por grupo y semilla
+    modelos_por_grupo_junio = entrenar_modelos_por_grupo_y_semilla(grupos_datos_agosto, mejores_params)
+    
+    # Generar predicciones finales (ahora con mes)
+    resultados_agosto = generar_predicciones_finales(
+        modelos_por_grupo_agosto,
+        X_predict_agosto,
+        clientes_predict_agosto,
+        df_predict_agosto,
+        top_k=TOP_K,
+        mes=FINAL_PREDIC_agosto
+    )
+    
+    # Guardar predicciones
+    guardar_predicciones_finales({"top_k": resultados_agosto["top_k_global"]}, f"{FINAL_PREDIC_AGOSTO}_global")
+    guardar_predicciones_finales({"top_k": resultados_agosto["top_k_grupos"]}, f"{FINAL_PREDIC_AGOSTO}_grupos")
+    
+    # Guardar ganancias
+    resultados_junio["ganancias"].to_csv(f"predict/ganancias_{STUDY_NAME}_{FINAL_PREDIC_AGOSTO}.csv", index=False)
+    logger.info(f"✅ CSV de ganancias guardado: predict/ganancias_{STUDY_NAME}_{FINAL_PREDIC_AGOSTO}.csv")
+
     # Resumen final
     logger.info("=== RESUMEN FINAL ===")
     logger.info("Entrenamiento final completado exitosamente")
     logger.info(f"Mejores hiperparámetros utilizados: {mejores_params}")
     logger.info(f"Log detallado: logs/{nombre_log}")
     logger.info(">>> Ejecución finalizada. Revisar logs para más detalles.")
+
+
+
+
+    
     
 
 if __name__ == "__main__":
