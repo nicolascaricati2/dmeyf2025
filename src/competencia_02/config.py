@@ -26,6 +26,7 @@ try:
         FINAL_PREDIC = _cfg.get("FINAL_PREDIC", 202106)
         FINAL_PREDIC_JUNE = _cfg.get("FINAL_PREDIC_JUNE", 202106)
         FINAL_PREDIC_APRIL = _cfg.get("FINAL_PREDIC_APRIL", 202104)  
+        FINAL_PREDIC_AGOSTO = _cfg.get("FINAL_PREDIC_AGOSTO", 202104)          
         UMBRAL = _cfg.get("UMBRAL", 0.04)
         HYPERPARAM_RANGES = _cfg.get("HYPERPARAM_RANGES", {})
         TOP_K = _cfg.get("TOP_K", 10000)
@@ -37,7 +38,8 @@ try:
         GRUPOS_VARIABLES = _cfg.get("GRUPOS_VARIABLES", {})
         FINAL_TRAINING_GROUPS = _cfg.get("FINAL_TRAINING_GROUPS", {})
         FINAL_TRAINING_GROUPS_APRIL = _cfg.get("FINAL_TRAINING_GROUPS_APRIL", {})
-        FINAL_TRAINING_GROUPS_JUNE = _cfg.get("FINAL_TRAINING_GROUPS_JUNE", {})        
+        FINAL_TRAINING_GROUPS_JUNE = _cfg.get("FINAL_TRAINING_GROUPS_JUNE", {})   
+        FINAL_TRAINING_GROUPS_AGOSTO = _cfg.get("FINAL_TRAINING_GROUPS_AGOSTO", {})    
         
 
 
