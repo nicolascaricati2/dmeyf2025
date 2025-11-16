@@ -153,7 +153,7 @@ def main():
         #     # df_fe = feature_engineering_delta_max(df_fe, columnas=columnas_para_fe_deltas, ventana=i)
         #     df_fe = feature_engineering_delta_mean(df_fe, columnas=columnas_para_fe_deltas, ventana=i)
         
-        # df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})  
+        df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})  
 
         
         logger.info(f"Feature Engineering completado: {df_fe.shape}")
