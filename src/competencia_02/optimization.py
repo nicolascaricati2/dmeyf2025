@@ -502,10 +502,10 @@ def guardar_iteracion(trial, ganancia, archivo_base=None):
 def objetivo_ganancia_por_meses(trial, df, undersampling=0.2) -> float:
     """
     Objetivo de optimización: entrenar por grupos+semillas y validar en abril y junio.
-    Devuelve la ganancia promedio de ambos meses.
+    Devuelve la ganancia promedio del ensamble global en ambos meses.
     """
 
-        # Rango por defecto de hiperparámetros
+    # Rango por defecto de hiperparámetros
     DEFAULT_HYPERPARAMS = {
         "num_leaves":      {"min": 5, "max": 50, "type": "int"},
         "learning_rate":   {"min": 0.005, "max": 0.10, "type": "float"},
@@ -513,8 +513,6 @@ def objetivo_ganancia_por_meses(trial, df, undersampling=0.2) -> float:
         "feature_fraction":{"min": 0.1, "max": 0.8, "type": "float"},
         "bagging_fraction":{"min": 0.2, "max": 0.8, "type": "float"},
     }
-
-
 
     # Merge entre YAML y defaults
     PARAM_RANGES = {**DEFAULT_HYPERPARAMS, **HYPERPARAM_RANGES}
@@ -574,9 +572,13 @@ def objetivo_ganancia_por_meses(trial, df, undersampling=0.2) -> float:
             mes=mes_predic
         )
 
-        ganancia_mes = resultados["ganancias"]["ganancia_total"].sum()
-        ganancias_por_mes.append(ganancia_mes)
+        # ✅ Usar la ganancia del ensamble global
+        ganancias_df = resultados["ganancias"]
+        ganancia_mes = ganancias_df.loc[
+            ganancias_df["grupo"] == "GLOBAL", "ganancia_test"
+        ].iloc[0]
 
+        ganancias_por_mes.append(ganancia_mes)
         logger.info(f"Ganancia {mes}: {ganancia_mes:,.0f}")
 
     # --- Promedio de ganancias ---
@@ -586,6 +588,7 @@ def objetivo_ganancia_por_meses(trial, df, undersampling=0.2) -> float:
     logger.debug(f"Trial {trial.number}: Ganancia promedio (abril+junio) = {ganancia_promedio:,.0f}")
 
     return ganancia_promedio
+
 
 
 
