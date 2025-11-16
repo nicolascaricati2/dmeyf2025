@@ -1,5 +1,5 @@
 #yaml
-STUDY_NAME: Modelo Final V6
+STUDY_NAME: Modelo Final V7
 competencia01:
   BUCKET_NAME: ../../../buckets/b1/Compe_02
   COSTO_ESTIMULO: 20000

@@ -353,7 +353,7 @@ def main():
     guardar_predicciones_finales({"top_k": resultados_agosto["top_k_grupos"]}, f"{FINAL_PREDIC_AGOSTO}_grupos")
     
     # Guardar ganancias
-    resultados_junio["ganancias"].to_csv(f"predict/ganancias_{STUDY_NAME}_{FINAL_PREDIC_AGOSTO}.csv", index=False)
+    resultados_agosto["ganancias"].to_csv(f"predict/ganancias_{STUDY_NAME}_{FINAL_PREDIC_AGOSTO}.csv", index=False)
     logger.info(f"✅ CSV de ganancias guardado: predict/ganancias_{STUDY_NAME}_{FINAL_PREDIC_AGOSTO}.csv")
 
     # Resumen final
