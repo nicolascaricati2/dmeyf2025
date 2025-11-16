@@ -345,7 +345,7 @@ def main():
         clientes_predict_agosto,
         df_predict_agosto,
         top_k=TOP_K,
-        mes=FINAL_PREDIC_agosto
+        mes=FINAL_PREDIC_AGOSTO
     )
     
     # Guardar predicciones
