@@ -336,7 +336,7 @@ def main():
     clientes_predict_agosto = df_predict_agosto["numero_de_cliente"].values
     
     # Entrenar modelos por grupo y semilla
-    modelos_por_grupo_junio = entrenar_modelos_por_grupo_y_semilla(grupos_datos_agosto, mejores_params)
+    modelos_por_grupo_agosto = entrenar_modelos_por_grupo_y_semilla(grupos_datos_agosto, mejores_params)
     
     # Generar predicciones finales (ahora con mes)
     resultados_agosto = generar_predicciones_finales(
