@@ -99,61 +99,61 @@ def main():
 
 
     
-        # # 2. Feature Engineering
-        # # Excluyo meses problematicos
-        # meses_excluir = [201904, 201905, 201910, 202006]
-        # df_fe = df_fe[~df_fe["foto_mes"].isin(meses_excluir)].copy()
-        # logger.info(f"Después de excluir meses problemáticos: {df_fe.shape}")
+        # # # 2. Feature Engineering
+        # # # Excluyo meses problematicos
+        # # meses_excluir = [201904, 201905, 201910, 202006]
+        # # df_fe = df_fe[~df_fe["foto_mes"].isin(meses_excluir)].copy()
+        # # logger.info(f"Después de excluir meses problemáticos: {df_fe.shape}")
 
-        # Imputacion para corregir 0s
-        df_fe = imputar_ceros_por_mes_anterior(df_fe, columnas_no_imputar=['target','target_to_calculate_gan'])
+        # # Imputacion para corregir 0s
+        # df_fe = imputar_ceros_por_mes_anterior(df_fe, columnas_no_imputar=['target','target_to_calculate_gan'])
 
-        # Excluyo Comisiones Otras 
-        df_fe = df_fe.drop(columns=['ccomisiones_otras','internet'])
+        # # Excluyo Comisiones Otras 
+        # df_fe = df_fe.drop(columns=['ccomisiones_otras','internet'])
         
-        # # Agrego Variables para controlar mejor continuidad
-        # df_fe = generar_ctrx_features(df_fe)        
+        # # # Agrego Variables para controlar mejor continuidad
+        # # df_fe = generar_ctrx_features(df_fe)        
 
-        # Excluyo las variables no corregidas          
-        cols_ajustar_ipc = [
-            c for c in df_fe.columns
-            if c.startswith(('m', 'Visa_m', 'Master_m','TC_Total_m')) and 'dolares' not in c
-        ]
-        df_fe = ajustar_por_ipc(df_fe, cols_ajustar_ipc, columna_mes='foto_mes')
-        df_fe = feature_engineering_tc_total(df_fe)
-        df_fe = variables_aux(df_fe)
-        columnas_a_excluir = ["foto_mes","cliente_edad","numero_de_cliente","target","target_to_calculate_gan"]
-        columnas_para_fe_regresiones = [
-            c for c in df_fe.columns
-            if c.startswith(('m', 'Visa_m', 'Master_m','TC_Total_m','Visa_F', 'Visa_f','Master_F', 'Master_f')) 
-            and c not in columnas_a_excluir
-        ]
+        # # Excluyo las variables no corregidas          
+        # cols_ajustar_ipc = [
+        #     c for c in df_fe.columns
+        #     if c.startswith(('m', 'Visa_m', 'Master_m','TC_Total_m')) and 'dolares' not in c
+        # ]
+        # df_fe = ajustar_por_ipc(df_fe, cols_ajustar_ipc, columna_mes='foto_mes')
+        # df_fe = feature_engineering_tc_total(df_fe)
+        # df_fe = variables_aux(df_fe)
+        # columnas_a_excluir = ["foto_mes","cliente_edad","numero_de_cliente","target","target_to_calculate_gan"]
+        # columnas_para_fe_regresiones = [
+        #     c for c in df_fe.columns
+        #     if c.startswith(('m', 'Visa_m', 'Master_m','TC_Total_m','Visa_F', 'Visa_f','Master_F', 'Master_f')) 
+        #     and c not in columnas_a_excluir
+        # ]
         
-        columnas_para_fe_deltas = [
-            c for c in df_fe.columns
-            if c.startswith(('c', 'Visa_c', 'Master_c','Master_s','Visa_s','TC_Total_c','TC_Total_s','t','Visa_F', 'Visa_f','Master_F', 'Master_f')) 
-            and c not in columnas_a_excluir
-        ]
-        df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})
-        # for i in (1,2):
-        #     df_fe = feature_engineering_lag(df_fe, columnas=atributos, cant_lag=i)
+        # columnas_para_fe_deltas = [
+        #     c for c in df_fe.columns
+        #     if c.startswith(('c', 'Visa_c', 'Master_c','Master_s','Visa_s','TC_Total_c','TC_Total_s','t','Visa_F', 'Visa_f','Master_F', 'Master_f')) 
+        #     and c not in columnas_a_excluir
+        # ]
+        # df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})
+        # # for i in (1,2):
+        # #     df_fe = feature_engineering_lag(df_fe, columnas=atributos, cant_lag=i)
 
-        df_fe = generar_cambios_de_pendiente_multiples_fast(df_fe, columnas=columnas_para_fe_regresiones, ventana_corta=3, ventana_larga=6)
-        df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})  
+        # df_fe = generar_cambios_de_pendiente_multiples_fast(df_fe, columnas=columnas_para_fe_regresiones, ventana_corta=3, ventana_larga=6)
+        # df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})  
 
-        # df_fe = generar_cambios_de_pendiente_multiples_fast(df_fe, columnas=columnas_para_fe_regresiones, ventana_corta=6, ventana_larga=12)
+        # # df_fe = generar_cambios_de_pendiente_multiples_fast(df_fe, columnas=columnas_para_fe_regresiones, ventana_corta=6, ventana_larga=12)
 
-        # for i in (2,3,6,8,10,12,15):
-        #     df_fe = feature_engineering_regr_slope_window(df_fe, columnas=columnas_para_fe_regresiones, ventana = i)
-        #     df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})
-        for i in (2,3):
-            df_fe = feature_engineering_delta(df_fe, columnas=columnas_para_fe_deltas, cant_delta = i)
-        df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})  
-        for i in (4,8):
-            # df_fe = feature_engineering_delta_max(df_fe, columnas=columnas_para_fe_deltas, ventana=i)
-            df_fe = feature_engineering_delta_mean(df_fe, columnas=columnas_para_fe_deltas, ventana=i)
+        # # for i in (2,3,6,8,10,12,15):
+        # #     df_fe = feature_engineering_regr_slope_window(df_fe, columnas=columnas_para_fe_regresiones, ventana = i)
+        # #     df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})
+        # for i in (2,3):
+        #     df_fe = feature_engineering_delta(df_fe, columnas=columnas_para_fe_deltas, cant_delta = i)
+        # df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})  
+        # for i in (4,8):
+        #     # df_fe = feature_engineering_delta_max(df_fe, columnas=columnas_para_fe_deltas, ventana=i)
+        #     df_fe = feature_engineering_delta_mean(df_fe, columnas=columnas_para_fe_deltas, ventana=i)
         
-        df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})  
+        # df_fe = df_fe.astype({col: "float32" for col in df_fe.select_dtypes("float").columns})  
 
         
         logger.info(f"Feature Engineering completado: {df_fe.shape}")
