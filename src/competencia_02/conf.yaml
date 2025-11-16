@@ -1,12 +1,12 @@
 #yaml
-STUDY_NAME: Resultados Experimentos 15 11 - US 0.5
+STUDY_NAME: Optimizacion con Set Up Correcto 15 11 (optimizo lamdas)
 competencia01:
   BUCKET_NAME: ../../../buckets/b1/Compe_02
   COSTO_ESTIMULO: 20000
   DATA_PATH: ../../../datasets/competencia_02_crudo.csv.gz
   UNDERSAMPLING: 1
-  UNDERSAMPLING_OPTIMIZACION: 0.5
-  UNDERSAMPLING_ENTRENAMIENTO_ENSAMBLE: 0.5
+  UNDERSAMPLING_OPTIMIZACION: 0.2
+  UNDERSAMPLING_ENTRENAMIENTO_ENSAMBLE: 0.2
   UNDERSAMPLING_MODELO_FINAL: 1  
   FINAL_PREDIC: 202106
   FINAL_PREDIC_JUNE: 202106
@@ -74,6 +74,12 @@ competencia01:
       max: 150
       min: 10
       type: int
+    # min_gain_to_split:
+    #   max: 50
+    #   min: 0
+    #   type: int
+
+
   MESES_EVALUACION:
     202104:
      train:

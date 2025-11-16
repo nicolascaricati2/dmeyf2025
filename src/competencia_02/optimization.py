@@ -8,7 +8,7 @@ import os
 from datetime import datetime
 from config import *
 from gain_function import calcular_ganancia, ganancia_lgb_binary, ganancia_evaluator, calcular_ganancia_top_k
-
+from final_training import *
 
 logging.basicConfig(
     level=logging.INFO,  # para ver mensajes DEBUG o superiores
@@ -389,7 +389,7 @@ def optimizar(df: pd.DataFrame, n_trials: int, study_name: str = None, undersamp
   
     # Ejecutar optimización
     if trials_a_ejecutar > 0:
-        study.optimize(lambda trial: objetivo_ganancia_ensamble(trial, df, undersampling), n_trials=trials_a_ejecutar)
+        study.optimize(lambda trial: objetivo_ganancia_por_meses(trial, df, undersampling), n_trials=trials_a_ejecutar)
         logger.info(f"🏆 Mejor ganancia: {study.best_value:,.0f}")
         logger.info(f"Mejores parámetros: {study.best_params}")
     else:
@@ -496,6 +496,96 @@ def guardar_iteracion(trial, ganancia, archivo_base=None):
     logger.info(f"Iteración {trial.number} guardada en {archivo}")
     logger.info(f"Ganancia: {ganancia:,.0f}" + "---" + "Parámetros: {params}")
 
+
+
+
+def objetivo_ganancia_por_meses(trial, df, undersampling=0.2) -> float:
+    """
+    Objetivo de optimización: entrenar por grupos+semillas y validar en abril y junio.
+    Devuelve la ganancia promedio de ambos meses.
+    """
+
+        # Rango por defecto de hiperparámetros
+    DEFAULT_HYPERPARAMS = {
+        "num_leaves":      {"min": 5, "max": 50, "type": "int"},
+        "learning_rate":   {"min": 0.005, "max": 0.10, "type": "float"},
+        "min_data_in_leaf":{"min": 300, "max": 800, "type": "int"},
+        "feature_fraction":{"min": 0.1, "max": 0.8, "type": "float"},
+        "bagging_fraction":{"min": 0.2, "max": 0.8, "type": "float"},
+    }
+
+
+
+    # Merge entre YAML y defaults
+    PARAM_RANGES = {**DEFAULT_HYPERPARAMS, **HYPERPARAM_RANGES}
+
+    # --- Sugerir hiperparámetros ---
+    params_base = {
+        'objective': 'binary',
+        'metric': 'custom',
+        'boosting_type': 'gbdt',
+        'first_metric_only': True,
+        'boost_from_average': True,
+        'feature_pre_filter': False,
+        'max_bin': 31,
+        'verbose': -1,
+    }
+
+    for hp, cfg in PARAM_RANGES.items():
+        if cfg["type"] == "int":
+            params_base[hp] = trial.suggest_int(hp, cfg["min"], cfg["max"])
+        elif cfg["type"] == "float":
+            params_base[hp] = trial.suggest_float(hp, cfg["min"], cfg["max"])
+        else:
+            raise ValueError(f"Tipo de hiperparámetro no soportado: {cfg['type']}")
+
+    ganancias_por_mes = []
+
+    # --- Validar en abril y junio ---
+    for mes, grupos_train, mes_predic in [
+        ("abril", FINAL_TRAINING_GROUPS_APRIL, FINAL_PREDIC_APRIL),
+        ("junio", FINAL_TRAINING_GROUPS_JUNE, FINAL_PREDIC_JUNE),
+    ]:
+        logger.info(f"=== OPTIMIZACIÓN VALIDANDO EN {mes.upper()} ===")
+
+        grupos_datos = preparar_datos_entrenamiento_por_grupos_por_semilla(
+            df,
+            grupos_train,
+            mes_predic,
+            undersampling_ratio=undersampling,
+            semillas=SEMILLA
+        )
+
+        modelos_por_grupo = entrenar_modelos_por_grupo_y_semilla(
+            grupos_datos,
+            mejores_params=params_base
+        )
+
+        df_predict = df[df["foto_mes"] == mes_predic]
+        X_predict = df_predict.drop(columns=["target", "target_to_calculate_gan"])
+        clientes_predict = df_predict["numero_de_cliente"].values
+
+        resultados = generar_predicciones_finales(
+            modelos_por_grupo,
+            X_predict,
+            clientes_predict,
+            df_predict,
+            top_k=TOP_K,
+            mes=mes_predic
+        )
+
+        ganancia_mes = resultados["ganancias"]["ganancia_total"].sum()
+        ganancias_por_mes.append(ganancia_mes)
+
+        logger.info(f"Ganancia {mes}: {ganancia_mes:,.0f}")
+
+    # --- Promedio de ganancias ---
+    ganancia_promedio = np.mean(ganancias_por_mes)
+
+    guardar_iteracion(trial, ganancia_promedio)
+    logger.debug(f"Trial {trial.number}: Ganancia promedio (abril+junio) = {ganancia_promedio:,.0f}")
+
+    return ganancia_promedio
 
 
 
