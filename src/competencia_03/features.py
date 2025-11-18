@@ -1154,3 +1154,87 @@ def feature_engineering_delta_mean(df: pd.DataFrame, columnas: list[str], ventan
 
     logger.info(f"Delta contra promedio calculado. DataFrame con {df_resultado.shape[1]} columnas")
     return df_resultado
+
+
+
+
+
+
+
+
+
+
+def imputar_ceros_por_promedio(df: pd.DataFrame, columnas_no_imputar: list[str] = []) -> pd.DataFrame:
+    """
+    Reemplaza valores cero en columnas de features para un foto_mes completo
+    si todos los clientes tienen cero en ese mes, usando el promedio entre el valor anterior y posterior por cliente.
+    - Si solo hay anterior: usa el anterior.
+    - Si solo hay posterior: usa el posterior.
+    - Si hay ambos: usa el promedio.
+    Registra en logs qué columnas y semanas fueron imputadas.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame con columnas 'numero_de_cliente', 'foto_mes', y features numéricos
+    columnas_no_imputar : list[str], default=[]
+        Lista de columnas que no deben ser imputadas
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame con ceros imputados desde valores vecinos si corresponde
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+    df = df.copy()
+
+    # Validaciones de integridad
+    if 'foto_mes' not in df.columns or 'numero_de_cliente' not in df.columns:
+        raise ValueError("El DataFrame debe contener las columnas 'foto_mes' y 'numero_de_cliente'")
+
+    df['foto_mes'] = pd.to_numeric(df['foto_mes'], errors='coerce').astype('Int64')
+    assert df['foto_mes'].notna().all(), "Hay valores nulos en foto_mes"
+    assert df['foto_mes'].dtype == 'Int64', "foto_mes no está en formato entero"
+
+    df = df.sort_values(['numero_de_cliente', 'foto_mes'])
+
+    columnas = [col for col in df.columns if col not in ['numero_de_cliente', 'foto_mes'] + columnas_no_imputar]
+
+    imputaciones = {}
+
+    for col in columnas:
+        meses_con_ceros = df.groupby('foto_mes')[col].agg(lambda x: (x == 0).all())
+        meses_con_ceros = meses_con_ceros.dropna()
+        meses_a_imputar = meses_con_ceros[meses_con_ceros == True].index.tolist()
+
+        if meses_a_imputar:
+            imputaciones[col] = meses_a_imputar
+
+        for mes in meses_a_imputar:
+            mask_mes = df['foto_mes'] == mes
+            # valores anterior y posterior
+            df[f'{col}_prev'] = df.groupby('numero_de_cliente')[col].shift(1)
+            df[f'{col}_next'] = df.groupby('numero_de_cliente')[col].shift(-1)
+
+            # cálculo del valor imputado
+            prev = df.loc[mask_mes, f'{col}_prev']
+            next_ = df.loc[mask_mes, f'{col}_next']
+
+            imputado = prev.combine(next_, lambda p, n: (
+                p if pd.isna(n) else
+                n if pd.isna(p) else
+                (p + n) / 2
+            ))
+
+            df.loc[mask_mes & (df[col] == 0), col] = imputado
+
+            # limpiar columnas auxiliares
+            df.drop(columns=[f'{col}_prev', f'{col}_next'], inplace=True)
+
+    # Log de imputaciones realizadas
+    for col, semanas in imputaciones.items():
+        logger.info(f"Imputación realizada en columna '{col}' para semanas: {semanas}")
+
+    return df
+

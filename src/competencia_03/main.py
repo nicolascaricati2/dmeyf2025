@@ -97,6 +97,12 @@ def main():
         # logger.info(f"Después de undersampling: {df_fe.shape}")
 
 
+        # Supongamos que ya tenés tu DataFrame "dataset"
+        dataset["ctrx_quarter_normalizado"] = dataset["ctrx_quarter"].astype(float)
+        
+        dataset.loc[dataset["cliente_antiguedad"] == 1, "ctrx_quarter_normalizado"] *= 5.0
+        dataset.loc[dataset["cliente_antiguedad"] == 2, "ctrx_quarter_normalizado"] *= 2.0
+        dataset.loc[dataset["cliente_antiguedad"] == 3, "ctrx_quarter_normalizado"] *= 1.2
 
     
         # # 2. Feature Engineering
@@ -106,13 +112,13 @@ def main():
         # logger.info(f"Después de excluir meses problemáticos: {df_fe.shape}")
 
         # Imputacion para corregir 0s
-        df_fe = imputar_ceros_por_mes_anterior(df_fe, columnas_no_imputar=['target','target_to_calculate_gan'])
+        df_fe = imputar_ceros_por_promedio(df_fe, columnas_no_imputar=['target','target_to_calculate_gan'])
 
         # Excluyo Comisiones Otras 
         df_fe = df_fe.drop(columns=['ccomisiones_otras','internet'])
         
-        # # Agrego Variables para controlar mejor continuidad
-        # df_fe = generar_ctrx_features(df_fe)        
+        # Agrego Variables para controlar mejor continuidad
+        df_fe = generar_ctrx_features(df_fe)        
 
         # Excluyo las variables no corregidas          
         cols_ajustar_ipc = [
@@ -247,7 +253,7 @@ def main():
         FINAL_TRAINING_GROUPS_APRIL,
         FINAL_PREDIC_APRIL,
         undersampling_ratio=UNDERSAMPLING_ENTRENAMIENTO_ENSAMBLE
-        # semillas=SEMILLA
+        semillas=SEMILLA
     )
     
     # Preparar datos de predicción
