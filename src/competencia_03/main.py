@@ -252,7 +252,7 @@ def main():
         df_fe,
         FINAL_TRAINING_GROUPS_APRIL,
         FINAL_PREDIC_APRIL,
-        undersampling_ratio=UNDERSAMPLING_ENTRENAMIENTO_ENSAMBLE
+        undersampling_ratio=UNDERSAMPLING_ENTRENAMIENTO_ENSAMBLE,
         semillas=SEMILLA
     )
     
