@@ -1,0 +1,39 @@
+[
+  {
+    "trial_number": 0,
+    "params": {
+      "num_leaves": 133,
+      "learning_rate": 0.08843868886046302,
+      "min_data_in_leaf": 61,
+      "feature_fraction": 0.6704552527166059,
+      "bagging_fraction": 0.573317886909611,
+      "lambda_l1": 4.343573302143261,
+      "lambda_l2": 0.040919208042777266,
+      "num_boost_round": 389
+    },
+    "value": 384000000.0,
+    "datetime": "2025-11-18T20:07:25.487012",
+    "state": "COMPLETE",
+    "configuracion": {
+      "semilla": [
+        555557
+      ],
+      "mes_train": [
+        202003,
+        202004,
+        202005,
+        202007,
+        202008,
+        202009,
+        202010,
+        202011,
+        202012,
+        202101
+      ],
+      "mes_validacion": [
+        202103,
+        202104
+      ]
+    }
+  }
+]
