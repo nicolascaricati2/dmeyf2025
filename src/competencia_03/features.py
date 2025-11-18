@@ -1158,21 +1158,11 @@ def feature_engineering_delta_mean(df: pd.DataFrame, columnas: list[str], ventan
 
 
 
-
 def imputar_ceros_por_promedio(df: pd.DataFrame, columnas_no_imputar: list[str] = []) -> pd.DataFrame:
-    """
-    Reemplaza valores cero en columnas de features para un foto_mes completo
-    si todos los clientes tienen cero en ese mes, usando el promedio entre el valor anterior y posterior por cliente.
-    - Si solo hay anterior: usa el anterior.
-    - Si solo hay posterior: usa el posterior.
-    - Si hay ambos: usa el promedio.
-    Si la columna era entera, se convierte a float para imputar y luego:
-      - Si todos los imputados son enteros, se vuelve a Int64.
-      - Si hay decimales, se deja en float.
-    """
-
     import logging
     import numpy as np
+    import pandas as pd
+
     logger = logging.getLogger(__name__)
     df = df.copy()
 
@@ -1195,11 +1185,10 @@ def imputar_ceros_por_promedio(df: pd.DataFrame, columnas_no_imputar: list[str] 
         if meses_a_imputar:
             imputaciones[col] = meses_a_imputar
 
-        # Guardar dtype original
         dtype_original = df[col].dtype
 
         # Convertir a float si era entero
-        if np.issubdtype(dtype_original, np.integer):
+        if pd.api.types.is_integer_dtype(dtype_original):
             df[col] = df[col].astype(float)
 
         for mes in meses_a_imputar:
@@ -1220,9 +1209,8 @@ def imputar_ceros_por_promedio(df: pd.DataFrame, columnas_no_imputar: list[str] 
             df.drop(columns=[f'{col}_prev', f'{col}_next'], inplace=True)
 
         # Si era entero originalmente, decidir si volver a Int64
-        if np.issubdtype(dtype_original, np.integer):
-            # Chequear si todos los valores son enteros (sin decimales)
-            if np.allclose(df[col].dropna() % 1, 0):
+        if pd.api.types.is_integer_dtype(dtype_original):
+            if np.allclose(df[col].dropna() % 1, 0):  # todos enteros
                 df[col] = df[col].round().astype("Int64")
             else:
                 logger.info(f"Columna '{col}' se mantiene en float porque la imputación generó decimales")
