@@ -98,11 +98,11 @@ def main():
 
 
         # Supongamos que ya tenés tu DataFrame "dataset"
-        dataset["ctrx_quarter_normalizado"] = dataset["ctrx_quarter"].astype(float)
+        df_fe["ctrx_quarter_normalizado"] = df_fe["ctrx_quarter"].astype(float)
         
-        dataset.loc[dataset["cliente_antiguedad"] == 1, "ctrx_quarter_normalizado"] *= 5.0
-        dataset.loc[dataset["cliente_antiguedad"] == 2, "ctrx_quarter_normalizado"] *= 2.0
-        dataset.loc[dataset["cliente_antiguedad"] == 3, "ctrx_quarter_normalizado"] *= 1.2
+        df_fe.loc[df_fe["cliente_antiguedad"] == 1, "ctrx_quarter_normalizado"] *= 5.0
+        df_fe.loc[df_fe["cliente_antiguedad"] == 2, "ctrx_quarter_normalizado"] *= 2.0
+        df_fe.loc[df_fe["cliente_antiguedad"] == 3, "ctrx_quarter_normalizado"] *= 1.2
 
     
         # # 2. Feature Engineering
