@@ -1159,11 +1159,6 @@ def feature_engineering_delta_mean(df: pd.DataFrame, columnas: list[str], ventan
 
 
 
-
-
-
-
-
 def imputar_ceros_por_promedio(df: pd.DataFrame, columnas_no_imputar: list[str] = []) -> pd.DataFrame:
     """
     Reemplaza valores cero en columnas de features para un foto_mes completo
@@ -1171,31 +1166,21 @@ def imputar_ceros_por_promedio(df: pd.DataFrame, columnas_no_imputar: list[str] 
     - Si solo hay anterior: usa el anterior.
     - Si solo hay posterior: usa el posterior.
     - Si hay ambos: usa el promedio.
-    Registra en logs qué columnas y semanas fueron imputadas.
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        DataFrame con columnas 'numero_de_cliente', 'foto_mes', y features numéricos
-    columnas_no_imputar : list[str], default=[]
-        Lista de columnas que no deben ser imputadas
-
-    Returns
-    -------
-    pd.DataFrame
-        DataFrame con ceros imputados desde valores vecinos si corresponde
+    Si la columna era entera, se convierte a float para imputar y luego:
+      - Si todos los imputados son enteros, se vuelve a Int64.
+      - Si hay decimales, se deja en float.
     """
+
     import logging
+    import numpy as np
     logger = logging.getLogger(__name__)
     df = df.copy()
 
-    # Validaciones de integridad
     if 'foto_mes' not in df.columns or 'numero_de_cliente' not in df.columns:
         raise ValueError("El DataFrame debe contener las columnas 'foto_mes' y 'numero_de_cliente'")
 
     df['foto_mes'] = pd.to_numeric(df['foto_mes'], errors='coerce').astype('Int64')
     assert df['foto_mes'].notna().all(), "Hay valores nulos en foto_mes"
-    assert df['foto_mes'].dtype == 'Int64', "foto_mes no está en formato entero"
 
     df = df.sort_values(['numero_de_cliente', 'foto_mes'])
 
@@ -1205,19 +1190,23 @@ def imputar_ceros_por_promedio(df: pd.DataFrame, columnas_no_imputar: list[str] 
 
     for col in columnas:
         meses_con_ceros = df.groupby('foto_mes')[col].agg(lambda x: (x == 0).all())
-        meses_con_ceros = meses_con_ceros.dropna()
         meses_a_imputar = meses_con_ceros[meses_con_ceros == True].index.tolist()
 
         if meses_a_imputar:
             imputaciones[col] = meses_a_imputar
 
+        # Guardar dtype original
+        dtype_original = df[col].dtype
+
+        # Convertir a float si era entero
+        if np.issubdtype(dtype_original, np.integer):
+            df[col] = df[col].astype(float)
+
         for mes in meses_a_imputar:
             mask_mes = df['foto_mes'] == mes
-            # valores anterior y posterior
             df[f'{col}_prev'] = df.groupby('numero_de_cliente')[col].shift(1)
             df[f'{col}_next'] = df.groupby('numero_de_cliente')[col].shift(-1)
 
-            # cálculo del valor imputado
             prev = df.loc[mask_mes, f'{col}_prev']
             next_ = df.loc[mask_mes, f'{col}_next']
 
@@ -1228,13 +1217,17 @@ def imputar_ceros_por_promedio(df: pd.DataFrame, columnas_no_imputar: list[str] 
             ))
 
             df.loc[mask_mes & (df[col] == 0), col] = imputado
-
-            # limpiar columnas auxiliares
             df.drop(columns=[f'{col}_prev', f'{col}_next'], inplace=True)
 
-    # Log de imputaciones realizadas
+        # Si era entero originalmente, decidir si volver a Int64
+        if np.issubdtype(dtype_original, np.integer):
+            # Chequear si todos los valores son enteros (sin decimales)
+            if np.allclose(df[col].dropna() % 1, 0):
+                df[col] = df[col].round().astype("Int64")
+            else:
+                logger.info(f"Columna '{col}' se mantiene en float porque la imputación generó decimales")
+
     for col, semanas in imputaciones.items():
         logger.info(f"Imputación realizada en columna '{col}' para semanas: {semanas}")
 
     return df
-
