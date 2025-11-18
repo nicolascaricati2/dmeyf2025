@@ -7,9 +7,72 @@ from config import MES_TRAIN, MES_VALIDACION, MES_TEST, FINAL_PREDIC
 logger = logging.getLogger("__name__")
 
 
+# def cargar_datos(path: str) -> pd.DataFrame | None:
+#     '''
+#     Carga el CSV crudo (sin target), calcula la columna target con SQL,
+#     hace el join para conservar todas las columnas originales
+#     y retorna un pandas.DataFrame filtrado por meses de interés.
+#     '''
+
+#     logger.info(f"Cargando dataset desde {path}")
+#     try:
+#         con = duckdb.connect(database=':memory:')
+
+#         # Registrar CSV como tabla cruda
+#         con.execute(f"""
+#             CREATE OR REPLACE TABLE competencia_01_crudo AS 
+#             SELECT * FROM read_csv_auto('{path}')
+#         """)
+
+#         # Crear tabla con target
+#         con.execute("""
+#             CREATE OR REPLACE TABLE competencia_01 AS 
+#             SELECT numero_de_cliente,
+#                    foto_mes,
+#                    CASE 
+#                        WHEN foto_mes_1 IS NULL THEN 'BAJA+1'
+#                        WHEN foto_mes_2 IS NULL THEN 'BAJA+2'
+#                        ELSE 'CONTINUA'
+#                    END AS target
+#             FROM (
+#                 SELECT numero_de_cliente,
+#                        foto_mes,
+#                        LEAD(foto_mes, 1, NULL) OVER (
+#                            PARTITION BY numero_de_cliente ORDER BY foto_mes
+#                        ) AS foto_mes_1,
+#                        LEAD(foto_mes, 2, NULL) OVER (
+#                            PARTITION BY numero_de_cliente ORDER BY foto_mes
+#                        ) AS foto_mes_2
+#                 FROM competencia_01_crudo
+#             ) a
+#         """)
+
+#         # Hacer join para quedarnos con todas las columnas originales + target
+#         con.execute("""
+#             CREATE OR REPLACE TABLE competencia_03 AS (
+#                 SELECT a.*, b.target
+#                 FROM competencia_01_crudo a
+#                 LEFT JOIN competencia_01 b
+#                 USING (numero_de_cliente, foto_mes)
+#             )
+#         """)
+
+#         # Pasar a pandas
+#         df = con.execute("SELECT * FROM competencia_03").fetchdf()
+
+#         # # Filtrar meses de interés
+#         # df = df[df['foto_mes'].isin(MES_TRAIN + [MES_VALIDACION] + [MES_TEST] + [FINAL_PREDIC])]
+
+#         logger.info(f"Dataset cargado con {df.shape[0]} filas y {df.shape[1]} columnas")
+#         return df
+
+#     except Exception as e:
+#         logger.error(f"Error al cargar el dataset: {e}")
+#         raise
+
 def cargar_datos(path: str) -> pd.DataFrame | None:
     '''
-    Carga el CSV crudo (sin target), calcula la columna target con SQL,
+    Carga el CSV crudo (sin target), calcula la columna target replicando la lógica de R,
     hace el join para conservar todas las columnas originales
     y retorna un pandas.DataFrame filtrado por meses de interés.
     '''
@@ -24,27 +87,28 @@ def cargar_datos(path: str) -> pd.DataFrame | None:
             SELECT * FROM read_csv_auto('{path}')
         """)
 
-        # Crear tabla con target
+        # Crear tabla con target replicando la lógica de R
         con.execute("""
             CREATE OR REPLACE TABLE competencia_01 AS 
+            WITH base AS (
+                SELECT numero_de_cliente,
+                       foto_mes,
+                       -- índice consecutivo: año*12 + mes
+                       (CAST(foto_mes/100 AS INTEGER) * 12 + foto_mes % 100) AS periodo0,
+                       LEAD((CAST(foto_mes/100 AS INTEGER) * 12 + foto_mes % 100), 1) 
+                           OVER (PARTITION BY numero_de_cliente ORDER BY foto_mes) AS periodo1,
+                       LEAD((CAST(foto_mes/100 AS INTEGER) * 12 + foto_mes % 100), 2) 
+                           OVER (PARTITION BY numero_de_cliente ORDER BY foto_mes) AS periodo2
+                FROM competencia_01_crudo
+            )
             SELECT numero_de_cliente,
                    foto_mes,
                    CASE 
-                       WHEN foto_mes_1 IS NULL THEN 'BAJA+1'
-                       WHEN foto_mes_2 IS NULL THEN 'BAJA+2'
+                       WHEN periodo1 IS NULL OR periodo0 + 1 < periodo1 THEN 'BAJA+1'
+                       WHEN periodo2 IS NULL OR periodo0 + 2 < periodo2 THEN 'BAJA+2'
                        ELSE 'CONTINUA'
                    END AS target
-            FROM (
-                SELECT numero_de_cliente,
-                       foto_mes,
-                       LEAD(foto_mes, 1, NULL) OVER (
-                           PARTITION BY numero_de_cliente ORDER BY foto_mes
-                       ) AS foto_mes_1,
-                       LEAD(foto_mes, 2, NULL) OVER (
-                           PARTITION BY numero_de_cliente ORDER BY foto_mes
-                       ) AS foto_mes_2
-                FROM competencia_01_crudo
-            ) a
+            FROM base
         """)
 
         # Hacer join para quedarnos con todas las columnas originales + target
@@ -60,15 +124,15 @@ def cargar_datos(path: str) -> pd.DataFrame | None:
         # Pasar a pandas
         df = con.execute("SELECT * FROM competencia_03").fetchdf()
 
-        # # Filtrar meses de interés
-        # df = df[df['foto_mes'].isin(MES_TRAIN + [MES_VALIDACION] + [MES_TEST] + [FINAL_PREDIC])]
-
         logger.info(f"Dataset cargado con {df.shape[0]} filas y {df.shape[1]} columnas")
         return df
 
     except Exception as e:
         logger.error(f"Error al cargar el dataset: {e}")
         raise
+
+
+
 
 def convertir_clase_ternaria_a_target(df: pd.DataFrame) -> pd.DataFrame:
     """
