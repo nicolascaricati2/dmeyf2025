@@ -1,0 +1,32 @@
+[
+  {
+    "trial_number": 0,
+    "ganancia": 715726666.6666666,
+    "num_leaves": 135,
+    "learning_rate": 0.08341310889641519,
+    "min_data_in_leaf": 40,
+    "feature_fraction": 0.4898994584648444,
+    "bagging_fraction": 0.523061953399073,
+    "num_boost_round": 658
+  },
+  {
+    "trial_number": 1,
+    "ganancia": 715733333.3333334,
+    "num_leaves": 12,
+    "learning_rate": 0.08593308682328643,
+    "min_data_in_leaf": 11,
+    "feature_fraction": 0.6463192761653265,
+    "bagging_fraction": 0.6572051492408666,
+    "num_boost_round": 609
+  },
+  {
+    "trial_number": 2,
+    "ganancia": 715700000.0,
+    "num_leaves": 28,
+    "learning_rate": 0.020322495664904728,
+    "min_data_in_leaf": 42,
+    "feature_fraction": 0.8066198102112132,
+    "bagging_fraction": 0.6555200354207902,
+    "num_boost_round": 795
+  }
+]
