@@ -1,5 +1,5 @@
 #yaml
-STUDY_NAME: Modelo Final US 0.2 - Uso Meses Corridos V2 - Saco los CTRL Adicionales
+STUDY_NAME: Modelo Final US 0.2 - Uso Meses Corridos V2 - Pruebo Undersampling solo en Meses viejos
 competencia01:
   BUCKET_NAME: ../../../buckets/b1/Compe_02
   COSTO_ESTIMULO: 20000
