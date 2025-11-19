@@ -341,7 +341,7 @@ competencia01:
     - 202103
     - 202104
 
- FINAL_TRAINING_GROUPS_APRIL:
+  FINAL_TRAINING_GROUPS_APRIL:
     undersampled_training_april:  
     # - 201901
     # - 201902
