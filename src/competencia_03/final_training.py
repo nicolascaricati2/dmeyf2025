@@ -844,3 +844,51 @@ def preparar_datos_entrenamiento_mixto(
     logger.info(f"✅ Datos preparados para {len(grupos_datos)} grupos y {len(semillas)} semillas por grupo.")
     return grupos_datos
 
+
+
+def preparar_datos_entrenamiento_mergeado(
+    df: pd.DataFrame,
+    grupos: dict[str, list[int]],
+    final_predic: int,
+    undersampling_ratio: float = 0.2,
+    semillas: list[int] = [555557]
+) -> dict[str, dict[int, tuple[pd.DataFrame, pd.Series]]]:
+    """
+    Prepara datos de entrenamiento permitiendo que algunos meses se undersampleen
+    y otros se usen completos, pero devolviendo un dataset mergeado por semilla.
+    """
+    grupos_datos = {}
+
+    # Detectar prefijos (ej: "training_april")
+    prefijos = set(nombre.split("_", 1)[-1] for nombre in grupos.keys())
+
+    for prefijo in prefijos:
+        grupos_datos[prefijo] = {}
+
+        for seed in semillas:
+            dfs_parciales = []
+
+            for nombre_grupo, meses in grupos.items():
+                if nombre_grupo.endswith(prefijo):
+                    df_grupo = df[df["foto_mes"].isin(meses)]
+
+                    if nombre_grupo.startswith("undersampled"):
+                        df_sampleado = undersample_clientes(df_grupo, ratio=undersampling_ratio, semilla=seed)
+                    else:
+                        df_sampleado = df_grupo.copy()
+
+                    dfs_parciales.append(df_sampleado)
+
+            # Merge de todos los parciales (undersampled + full)
+            df_final = pd.concat(dfs_parciales, axis=0)
+
+            X_train = df_final.drop(columns=["target", "target_to_calculate_gan"])
+            y_train = df_final["target"]
+            grupos_datos[prefijo][seed] = (X_train, y_train)
+
+            logger.info(f"Grupo '{prefijo}' con semilla {seed}: {len(X_train):,} registros (mergeado)")
+
+    logger.info(f"✅ Datos preparados para {len(grupos_datos)} grupos mergeados y {len(semillas)} semillas por grupo.")
+    return grupos_datos
+
+
