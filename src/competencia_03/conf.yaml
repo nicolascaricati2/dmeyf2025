@@ -1,5 +1,5 @@
 #yaml
-STUDY_NAME: Modelo Final US 0.2 - Uso Meses Corridos V2 - Pruebo Undersampling solo en Meses viejos V2
+STUDY_NAME: Modelo Final US 0.2 - Uso Meses Corridos V3 - Agrego a meses viejos seasonality
 competencia01:
   BUCKET_NAME: ../../../buckets/b1/Compe_02
   COSTO_ESTIMULO: 20000
@@ -316,7 +316,6 @@ competencia01:
     # - 201903
     - 201904
     - 201905
-    - 201906
     - 201907
     - 201908
     - 201909
@@ -333,8 +332,9 @@ competencia01:
     - 202008
     - 202009
     - 202010
-    full_used_training_june:
     - 202011
+    full_used_training_june:
+    - 201906
     - 202012
     - 202101
     - 202102
@@ -346,7 +346,7 @@ competencia01:
     # - 201901
     # - 201902
     # - 201903
-    - 201904
+    # - 201904
     - 201905
     - 201906
     - 201907
@@ -363,9 +363,11 @@ competencia01:
     # - 202006
     - 202007
     - 202008
-    full_used_training_april:
     - 202009
     - 202010
+    full_used_training_april:
+    - 201904
+    - 202004
     - 202011
     - 202012
     - 202101
@@ -379,7 +381,7 @@ competencia01:
     - 201905
     - 201906
     - 201907
-    - 201908
+    # - 201908
     - 201909
     # - 201910
     - 201911
@@ -391,14 +393,16 @@ competencia01:
     - 202005
     # - 202006
     - 202007
-    - 202008
+    # - 202008
     - 202009
     - 202010
     - 202011
     - 202012
-    full_used_training_august:    
     - 202101
     - 202102
+    full_used_training_august:    
+    - 201908
+    - 202008
     - 202103
     - 202104
     - 202105    
