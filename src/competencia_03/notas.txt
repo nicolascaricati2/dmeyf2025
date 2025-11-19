@@ -26,8 +26,8 @@ Graficos copados para ver ganancias
 
 
 
-!cd /home/nicolascaricati_educ/dmeyf2025/src/competencia_02 && git status && git add . && git commit -m "Actualizo main y opt" && git push && python run_pipeline.py
-!cd /home/nicolascaricati_educ/dmeyf2025/src/competencia_02 && python run_pipeline.py
+!cd /home/nicolascaricati_educ/dmeyf2025/src/competencia_03 && git status && git add . && git commit -m "Actualizo main y opt" && git push && python run_pipeline.py
+!cd /home/nicolascaricati_educ/dmeyf2025/src/competencia_03 && python run_pipeline.py
 
 
 Cosas a probar
