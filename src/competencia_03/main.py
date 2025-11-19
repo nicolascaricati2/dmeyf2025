@@ -127,7 +127,7 @@ def main():
             c for c in df_fe.columns
             if c.startswith(('m', 'Visa_m', 'Master_m','TC_Total_m')) and 'dolares' not in c
         ]
-        df_fe = transformar_a_percentil_rank(df_fe, cols_ajustar_ipc, columna_mes='foto_mes')
+        df_fe = transformar_a_grupos_percentiles(df_fe, cols_ajustar_ipc, columna_mes='foto_mes',n_grupos = 200)
 
         columnas_a_excluir = ["foto_mes","cliente_edad","numero_de_cliente","target","target_to_calculate_gan"]
         columnas_para_fe_regresiones = [
