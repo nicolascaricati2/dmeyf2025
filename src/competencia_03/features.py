@@ -1250,7 +1250,6 @@ def transformar_a_percentil_rank(
     return df_out
 
 
-
 def transformar_a_grupos_percentiles(
     df: pd.DataFrame,
     columnas: list[str],
@@ -1259,22 +1258,23 @@ def transformar_a_grupos_percentiles(
 ) -> pd.DataFrame:
     """
     Reemplaza las columnas especificadas por su percentil rank agrupado en N grupos.
+    Mantiene todas las demás columnas sin cambios.
     Ejemplo: n_grupos=100 → centiles; n_grupos=10 → deciles.
     """
     con = duckdb.connect()
     con.register('df_view', df)
 
     query_parts = []
-    for col in columnas:
-        # percent_rank()*n_grupos → discretiza en grupos
-        query_parts.append(
-            f"CAST(percent_rank() OVER (PARTITION BY {columna_mes} ORDER BY {col}) * {n_grupos} AS INT) AS {col}"
-        )
+    for col in df.columns:
+        if col in columnas:
+            # percent_rank()*n_grupos → discretiza en grupos
+            query_parts.append(
+                f"CAST(percent_rank() OVER (PARTITION BY {columna_mes} ORDER BY {col}) * {n_grupos} AS INT) AS {col}"
+            )
+        else:
+            query_parts.append(col)
 
-    query = f"""
-        SELECT {columna_mes}, numero_de_cliente, {", ".join(query_parts)}
-        FROM df_view
-    """
+    query = f"SELECT {', '.join(query_parts)} FROM df_view"
 
     df_out = con.execute(query).fetchdf()
     con.close()
