@@ -807,3 +807,40 @@ def generar_predicciones_finales(
         "top_k_grupos": df_topk_grupos,
         "ganancias": df_ganancias
     }
+
+
+
+def preparar_datos_entrenamiento_mixto(
+    df: pd.DataFrame,
+    grupos: dict[str, list[int]],
+    final_predic: int,
+    undersampling_ratio: float = 0.2,
+    semillas: list[int] = [555557]
+    ) -> dict[str, dict[int, tuple[pd.DataFrame, pd.Series]]]:
+    """
+    Prepara datos de entrenamiento permitiendo que algunos grupos se undersampleen
+    y otros se usen completos.
+    """
+    grupos_datos = {}
+
+    for nombre_grupo, meses in grupos.items():
+        df_grupo = df[df["foto_mes"].isin(meses)]
+        grupos_datos[nombre_grupo] = {}
+
+        for seed in semillas:
+            if nombre_grupo.startswith("undersampled"):
+                # aplicar undersampling
+                df_sampleado = undersample_clientes(df_grupo, ratio=undersampling_ratio, semilla=seed)
+            else:
+                # usar todos los registros
+                df_sampleado = df_grupo.copy()
+
+            X_train = df_sampleado.drop(columns=["target", "target_to_calculate_gan"])
+            y_train = df_sampleado["target"]
+            grupos_datos[nombre_grupo][seed] = (X_train, y_train)
+
+            logger.info(f"Grupo '{nombre_grupo}' con semilla {seed}: {len(X_train):,} registros")
+
+    logger.info(f"✅ Datos preparados para {len(grupos_datos)} grupos y {len(semillas)} semillas por grupo.")
+    return grupos_datos
+

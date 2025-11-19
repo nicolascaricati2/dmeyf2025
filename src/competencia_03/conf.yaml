@@ -6,7 +6,7 @@ competencia01:
   DATA_PATH: ../../../datasets/competencia_02_crudo.csv.gz
   UNDERSAMPLING: 0.2
   UNDERSAMPLING_OPTIMIZACION: 0.2
-  UNDERSAMPLING_ENTRENAMIENTO_ENSAMBLE: 0.2
+  UNDERSAMPLING_ENTRENAMIENTO_ENSAMBLE: 0.03
   UNDERSAMPLING_MODELO_FINAL: 1  
   FINAL_PREDIC: 202106
   FINAL_PREDIC_JUNE: 202106
@@ -218,11 +218,102 @@ competencia01:
   # - 557860
   TOP_K: 10000
   UMBRAL: 0.015
+  # FINAL_TRAINING_GROUPS_JUNE:
+  #   final_training_june:  
+  #   - 201901
+  #   - 201902
+  #   - 201903
+  #   - 201904
+  #   - 201905
+  #   - 201906
+  #   - 201907
+  #   - 201908
+  #   - 201909
+  #   - 201910
+  #   - 201911
+  #   - 201912
+  #   - 202001
+  #   - 202002
+  #   - 202003
+  #   - 202004
+  #   - 202005
+  #   # - 202006
+  #   - 202007
+  #   - 202008
+  #   - 202009
+  #   - 202010
+  #   - 202011
+  #   - 202012
+  #   - 202101
+  #   - 202102
+  #   - 202103
+  #   - 202104
+  # FINAL_TRAINING_GROUPS_APRIL:
+  #   final_training_april:  
+  #   - 201901
+  #   - 201902
+  #   - 201903
+  #   - 201904
+  #   - 201905
+  #   - 201906
+  #   - 201907
+  #   - 201908
+  #   - 201909
+  #   - 201910
+  #   - 201911
+  #   - 201912
+  #   - 202001
+  #   - 202002
+  #   - 202003
+  #   - 202004
+  #   - 202005
+  #   # - 202006
+  #   - 202007
+  #   - 202008
+  #   - 202009
+  #   - 202010
+  #   - 202011
+  #   - 202012
+  #   - 202101
+  #   - 202102
+  # FINAL_TRAINING_GROUPS_AGOSTO:
+  #   final_training_august:  
+  #   - 201901
+  #   - 201902
+  #   - 201903
+  #   - 201904
+  #   - 201905
+  #   - 201906
+  #   - 201907
+  #   - 201908
+  #   - 201909
+  #   # - 201910
+  #   - 201911
+  #   - 201912
+  #   - 202001
+  #   - 202002
+  #   - 202003
+  #   - 202004
+  #   - 202005
+  #   # - 202006
+  #   - 202007
+  #   - 202008
+  #   - 202009
+  #   - 202010
+  #   - 202011
+  #   - 202012
+  #   - 202101
+  #   - 202102
+  #   - 202103
+  #   - 202104
+  #   - 202105    
+  #   - 202106
+
   FINAL_TRAINING_GROUPS_JUNE:
-    final_training_june:  
-    - 201901
-    - 201902
-    - 201903
+    undersampled_training_june:  
+    # - 201901
+    # - 201902
+    # - 201903
     - 201904
     - 201905
     - 201906
@@ -242,17 +333,19 @@ competencia01:
     - 202008
     - 202009
     - 202010
+    full_used_training_june:
     - 202011
     - 202012
     - 202101
     - 202102
     - 202103
     - 202104
-  FINAL_TRAINING_GROUPS_APRIL:
-    final_training_april:  
-    - 201901
-    - 201902
-    - 201903
+
+ FINAL_TRAINING_GROUPS_APRIL:
+    undersampled_training_april:  
+    # - 201901
+    # - 201902
+    # - 201903
     - 201904
     - 201905
     - 201906
@@ -270,6 +363,7 @@ competencia01:
     # - 202006
     - 202007
     - 202008
+    full_used_training_april:
     - 202009
     - 202010
     - 202011
@@ -277,10 +371,10 @@ competencia01:
     - 202101
     - 202102
   FINAL_TRAINING_GROUPS_AGOSTO:
-    final_training_august:  
-    - 201901
-    - 201902
-    - 201903
+    undersampled_training_august:  
+    # - 201901
+    # - 201902
+    # - 201903
     - 201904
     - 201905
     - 201906
@@ -302,9 +396,13 @@ competencia01:
     - 202010
     - 202011
     - 202012
+    full_used_training_august:    
     - 202101
     - 202102
     - 202103
     - 202104
     - 202105    
     - 202106
+
+
+

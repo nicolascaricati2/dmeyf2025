@@ -248,7 +248,7 @@ def main():
     logger.info("=== ENTRENAMIENTO FINAL ABRIL ===")
     
     # Preparar datos por grupo y semilla con undersampling
-    grupos_datos_abril = preparar_datos_entrenamiento_por_grupos_por_semilla(
+    grupos_datos_abril = preparar_datos_entrenamiento_mixto(
         df_fe,
         FINAL_TRAINING_GROUPS_APRIL,
         FINAL_PREDIC_APRIL,
@@ -288,7 +288,7 @@ def main():
     logger.info("=== ENTRENAMIENTO FINAL JUNIO ===")
     
     # Preparar datos por grupo y semilla con undersampling
-    grupos_datos_junio = preparar_datos_entrenamiento_por_grupos_por_semilla(
+    grupos_datos_junio = preparar_datos_entrenamiento_mixto(
         df_fe,
         FINAL_TRAINING_GROUPS_JUNE,
         FINAL_PREDIC_JUNE,
@@ -328,7 +328,7 @@ def main():
     # logger.info("=== ENTRENAMIENTO FINAL AGOSTO ===")
     
     # # Preparar datos por grupo y semilla con undersampling
-    # grupos_datos_agosto = preparar_datos_entrenamiento_por_grupos_por_semilla(
+    # grupos_datos_agosto = preparar_datos_entrenamiento_mixto(
     #     df_fe,
     #     FINAL_TRAINING_GROUPS_AGOSTO,
     #     FINAL_PREDIC_AGOSTO,
