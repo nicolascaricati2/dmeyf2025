@@ -1219,3 +1219,65 @@ def imputar_ceros_por_promedio(df: pd.DataFrame, columnas_no_imputar: list[str] 
         logger.info(f"Imputación realizada en columna '{col}' para semanas: {semanas}")
 
     return df
+
+
+
+def transformar_a_percentil_rank(
+    df: pd.DataFrame,
+    columnas: list[str],
+    columna_mes: str = 'foto_mes'
+) -> pd.DataFrame:
+    """
+    Reemplaza las columnas especificadas por su percentil rank dentro de cada mes.
+    El resultado es un valor entre 0 y 1.
+    """
+    con = duckdb.connect()
+    con.register('df_view', df)
+
+    # Construir expresiones de percent_rank para cada columna
+    query_parts = []
+    for col in columnas:
+        query_parts.append(
+            f"percent_rank() OVER (PARTITION BY {columna_mes} ORDER BY {col}) AS {col}"
+        )
+
+    query = f"""
+        SELECT {columna_mes}, numero_de_cliente, {", ".join(query_parts)}
+        FROM df_view
+    """
+
+    df_out = con.execute(query).fetchdf()
+    con.close()
+    return df_out
+
+
+
+
+def transformar_a_grupos_percentiles(
+    df: pd.DataFrame,
+    columnas: list[str],
+    columna_mes: str = 'foto_mes',
+    n_grupos: int = 100
+) -> pd.DataFrame:
+    """
+    Reemplaza las columnas especificadas por su percentil rank agrupado en N grupos.
+    Ejemplo: n_grupos=100 → centiles; n_grupos=10 → deciles.
+    """
+    con = duckdb.connect()
+    con.register('df_view', df)
+
+    query_parts = []
+    for col in columnas:
+        # percent_rank()*n_grupos → discretiza en grupos
+        query_parts.append(
+            f"CAST(percent_rank() OVER (PARTITION BY {columna_mes} ORDER BY {col}) * {n_grupos} AS INT) AS {col}"
+        )
+
+    query = f"""
+        SELECT {columna_mes}, numero_de_cliente, {", ".join(query_parts)}
+        FROM df_view
+    """
+
+    df_out = con.execute(query).fetchdf()
+    con.close()
+    return df_out
