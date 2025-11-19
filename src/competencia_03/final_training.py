@@ -855,21 +855,21 @@ def preparar_datos_entrenamiento_mergeado(
 ) -> dict[str, dict[int, tuple[pd.DataFrame, pd.Series]]]:
     """
     Prepara datos de entrenamiento permitiendo que algunos meses se undersampleen
-    y otros se usen completos, pero devolviendo un dataset mergeado por semilla.
+    y otros se usen completos, devolviendo un dataset mergeado por semilla.
     """
     grupos_datos = {}
 
-    # Detectar prefijos (ej: "training_april")
-    prefijos = set(nombre.split("_", 1)[-1] for nombre in grupos.keys())
+    # Normalizar nombres: quedarnos solo con el sufijo (ej: "april")
+    sufijos = set(nombre.split("_")[-1] for nombre in grupos.keys())
 
-    for prefijo in prefijos:
-        grupos_datos[prefijo] = {}
+    for sufijo in sufijos:
+        grupos_datos[sufijo] = {}
 
         for seed in semillas:
             dfs_parciales = []
 
             for nombre_grupo, meses in grupos.items():
-                if nombre_grupo.endswith(prefijo):
+                if nombre_grupo.endswith(sufijo):
                     df_grupo = df[df["foto_mes"].isin(meses)]
 
                     if nombre_grupo.startswith("undersampled"):
@@ -884,9 +884,9 @@ def preparar_datos_entrenamiento_mergeado(
 
             X_train = df_final.drop(columns=["target", "target_to_calculate_gan"])
             y_train = df_final["target"]
-            grupos_datos[prefijo][seed] = (X_train, y_train)
+            grupos_datos[sufijo][seed] = (X_train, y_train)
 
-            logger.info(f"Grupo '{prefijo}' con semilla {seed}: {len(X_train):,} registros (mergeado)")
+            logger.info(f"Grupo '{sufijo}' con semilla {seed}: {len(X_train):,} registros (mergeado)")
 
     logger.info(f"✅ Datos preparados para {len(grupos_datos)} grupos mergeados y {len(semillas)} semillas por grupo.")
     return grupos_datos
