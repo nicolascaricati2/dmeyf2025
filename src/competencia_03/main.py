@@ -117,8 +117,8 @@ def main():
         # Excluyo Comisiones Otras 
         df_fe = df_fe.drop(columns=['ccomisiones_otras','internet'])
         
-        # Agrego Variables para controlar mejor continuidad
-        df_fe = generar_ctrx_features(df_fe)        
+        # # Agrego Variables para controlar mejor continuidad
+        # df_fe = generar_ctrx_features(df_fe)        
 
         # Excluyo las variables no corregidas          
         cols_ajustar_ipc = [
