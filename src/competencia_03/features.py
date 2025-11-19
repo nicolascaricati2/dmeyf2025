@@ -1221,7 +1221,6 @@ def imputar_ceros_por_promedio(df: pd.DataFrame, columnas_no_imputar: list[str] 
     return df
 
 
-
 def transformar_a_percentil_rank(
     df: pd.DataFrame,
     columnas: list[str],
@@ -1229,27 +1228,26 @@ def transformar_a_percentil_rank(
 ) -> pd.DataFrame:
     """
     Reemplaza las columnas especificadas por su percentil rank dentro de cada mes.
-    El resultado es un valor entre 0 y 1.
+    Mantiene todas las demás columnas sin cambios.
     """
     con = duckdb.connect()
     con.register('df_view', df)
 
-    # Construir expresiones de percent_rank para cada columna
+    # Construir expresiones: si la columna está en la lista, usar percent_rank; si no, devolver tal cual
     query_parts = []
-    for col in columnas:
-        query_parts.append(
-            f"percent_rank() OVER (PARTITION BY {columna_mes} ORDER BY {col}) AS {col}"
-        )
+    for col in df.columns:
+        if col in columnas:
+            query_parts.append(
+                f"percent_rank() OVER (PARTITION BY {columna_mes} ORDER BY {col}) AS {col}"
+            )
+        else:
+            query_parts.append(col)
 
-    query = f"""
-        SELECT {columna_mes}, numero_de_cliente, {", ".join(query_parts)}
-        FROM df_view
-    """
+    query = f"SELECT {', '.join(query_parts)} FROM df_view"
 
     df_out = con.execute(query).fetchdf()
     con.close()
     return df_out
-
 
 
 
