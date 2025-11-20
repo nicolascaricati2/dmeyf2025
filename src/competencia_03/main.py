@@ -71,7 +71,7 @@ def main():
     crear_snapshot_modelo(STUDY_NAME)
 
     # path_parquet = os.path.join(BUCKET_NAME, "data", f"df_fe{STUDY_NAME}.parquet")
-    path_parquet = "../../../buckets/b1/Compe_02/data/df_feModelo Final US 0.2 - Uso Meses Corridos y seasonality - Cambio IPC por Percentiles Rank V3.parquet")
+    path_parquet = "../../../buckets/b1/Compe_02/data/df_feModelo Final US 0.2 - Uso Meses Corridos y seasonality - Cambio IPC por Percentiles Rank V3.parquet"
 
     if os.path.exists(path_parquet):
         logger.info("✅ df_fe.parquet encontrado")
