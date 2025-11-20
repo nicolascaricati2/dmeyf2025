@@ -249,7 +249,7 @@ def main():
     # logger.info("=== ENTRENAMIENTO FINAL ABRIL ===")
     
     # # Preparar datos por grupo y semilla con undersampling
-    # grupos_datos_abril = preparar_datos_entrenamiento_mergeado(
+    # grupos_datos_abril = preparar_datos_entrenamiento_por_grupos_por_semilla(
     #     df_fe,
     #     FINAL_TRAINING_GROUPS_APRIL,
     #     FINAL_PREDIC_APRIL,
@@ -283,43 +283,43 @@ def main():
     # resultados_abril["ganancias"].to_csv(f"predict/ganancias_{STUDY_NAME}_{FINAL_PREDIC_APRIL}.csv", index=False)
     # logger.info(f"✅ CSV de ganancias guardado: predict/ganancias_{STUDY_NAME}_{FINAL_PREDIC_APRIL}.csv")
 
-    # # Entrenamiento en Mayo
-    # logger.info("=== ENTRENAMIENTO FINAL MAYO ===")
+    # Entrenamiento en Mayo
+    logger.info("=== ENTRENAMIENTO FINAL MAYO ===")
     
-    # # Preparar datos por grupo y semilla con undersampling
-    # grupos_datos_mayo = preparar_datos_entrenamiento_mergeado(
-    #     df_fe,
-    #     FINAL_TRAINING_GROUPS_MAYO,
-    #     FINAL_PREDIC_MAYO,
-    #     undersampling_ratio=UNDERSAMPLING_ENTRENAMIENTO_ENSAMBLE,
-    #     semillas=SEMILLA
-    # )
+    # Preparar datos por grupo y semilla con undersampling
+    grupos_datos_mayo = preparar_datos_entrenamiento_por_grupos_por_semilla(
+        df_fe,
+        FINAL_TRAINING_GROUPS_MAYO,
+        FINAL_PREDIC_MAYO,
+        undersampling_ratio=UNDERSAMPLING_ENTRENAMIENTO_ENSAMBLE,
+        semillas=SEMILLA
+    )
     
-    # # Preparar datos de predicción
-    # df_predict_mayo = df_fe[df_fe["foto_mes"] == FINAL_PREDIC_MAYO]
-    # X_predict_mayo = df_predict_mayo.drop(columns=["target", "target_to_calculate_gan"])
-    # clientes_predict_mayo = df_predict_mayo["numero_de_cliente"].values
+    # Preparar datos de predicción
+    df_predict_mayo = df_fe[df_fe["foto_mes"] == FINAL_PREDIC_MAYO]
+    X_predict_mayo = df_predict_mayo.drop(columns=["target", "target_to_calculate_gan"])
+    clientes_predict_mayo = df_predict_mayo["numero_de_cliente"].values
     
-    # # Entrenar modelos por grupo y semilla
-    # modelos_por_grupo_mayo = entrenar_modelos_por_grupo_y_semilla(grupos_datos_mayo, mejores_params)
+    # Entrenar modelos por grupo y semilla
+    modelos_por_grupo_mayo = entrenar_modelos_por_grupo_y_semilla(grupos_datos_mayo, mejores_params)
     
-    # # Generar predicciones finales (ahora con mes)
-    # resultados_mayo = generar_predicciones_finales(
-    #     modelos_por_grupo_mayo,
-    #     X_predict_mayo,
-    #     clientes_predict_mayo,
-    #     df_predict_mayo,
-    #     top_k=TOP_K,
-    #     mes=FINAL_PREDIC_MAYO
-    # )
+    # Generar predicciones finales (ahora con mes)
+    resultados_mayo = generar_predicciones_finales(
+        modelos_por_grupo_mayo,
+        X_predict_mayo,
+        clientes_predict_mayo,
+        df_predict_mayo,
+        top_k=TOP_K,
+        mes=FINAL_PREDIC_MAYO
+    )
     
-    # # Guardar predicciones
-    # guardar_predicciones_finales({"top_k": resultados_mayo["top_k_global"]}, f"{FINAL_PREDIC_MAYO}_global")
-    # guardar_predicciones_finales({"top_k": resultados_mayo["top_k_grupos"]}, f"{FINAL_PREDIC_MAYO}_grupos")
+    # Guardar predicciones
+    guardar_predicciones_finales({"top_k": resultados_mayo["top_k_global"]}, f"{FINAL_PREDIC_MAYO}_global")
+    guardar_predicciones_finales({"top_k": resultados_mayo["top_k_grupos"]}, f"{FINAL_PREDIC_MAYO}_grupos")
     
-    # # Guardar ganancias
-    # resultados_mayo["ganancias"].to_csv(f"predict/ganancias_{STUDY_NAME}_{FINAL_PREDIC_MAYO}.csv", index=False)
-    # logger.info(f"✅ CSV de ganancias guardado: predict/ganancias_{STUDY_NAME}_{FINAL_PREDIC_MAYO}.csv")
+    # Guardar ganancias
+    resultados_mayo["ganancias"].to_csv(f"predict/ganancias_{STUDY_NAME}_{FINAL_PREDIC_MAYO}.csv", index=False)
+    logger.info(f"✅ CSV de ganancias guardado: predict/ganancias_{STUDY_NAME}_{FINAL_PREDIC_MAYO}.csv")
 
     
     
@@ -329,7 +329,7 @@ def main():
     # logger.info("=== ENTRENAMIENTO FINAL JUNIO ===")
     
     # # Preparar datos por grupo y semilla con undersampling
-    # grupos_datos_junio = preparar_datos_entrenamiento_mergeado(
+    # grupos_datos_junio = preparar_datos_entrenamiento_por_grupos_por_semilla(
     #     df_fe,
     #     FINAL_TRAINING_GROUPS_JUNE,
     #     FINAL_PREDIC_JUNE,
@@ -368,7 +368,7 @@ def main():
     logger.info("=== ENTRENAMIENTO FINAL JULIO ===")
     
     # Preparar datos por grupo y semilla con undersampling
-    grupos_datos_julio = preparar_datos_entrenamiento_mergeado(
+    grupos_datos_julio = preparar_datos_entrenamiento_por_grupos_por_semilla(
         df_fe,
         FINAL_TRAINING_GROUPS_JULIO,
         FINAL_PREDIC_JULIO,
@@ -409,7 +409,7 @@ def main():
     # logger.info("=== ENTRENAMIENTO FINAL AGOSTO ===")
     
     # # Preparar datos por grupo y semilla con undersampling
-    # grupos_datos_agosto = preparar_datos_entrenamiento_mergeado(
+    # grupos_datos_agosto = preparar_datos_entrenamiento_por_grupos_por_semilla(
     #     df_fe,
     #     FINAL_TRAINING_GROUPS_AGOSTO,
     #     FINAL_PREDIC_AGOSTO,
