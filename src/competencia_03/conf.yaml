@@ -376,7 +376,7 @@ competencia01:
     - 202010
     - 202011
     - 202012
-    - 202101
+    # - 202101
     # - 202102
     # - 202103
     # - 202104
@@ -388,8 +388,8 @@ competencia01:
     - 202003
     - 202004
     - 202005
-    - 202103
-    - 202104
+    - 202101
+    - 202102
   FINAL_TRAINING_GROUPS_AGOSTO:
     undersampled_training_august:  
     # - 201901
@@ -418,6 +418,8 @@ competencia01:
     - 202012
     - 202101
     - 202102
+    - 202103
+    - 202104
     full_used_training_august:    
     - 201907    
     - 201908
