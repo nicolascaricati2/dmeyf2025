@@ -1,9 +1,9 @@
 #yaml
-STUDY_NAME: Modelo Final US 0.2 - Uso Meses Corridos y seasonality - Cambio IPC por Percentiles Rank V2
+STUDY_NAME: Modelo Final US 0.2 - Uso Meses Corridos y seasonality - Cambio IPC por Percentiles Rank V3
 competencia01:
   BUCKET_NAME: ../../../buckets/b1/Compe_02
   COSTO_ESTIMULO: 20000
-  DATA_PATH: ../../../datasets/competencia_02_crudo.csv.gz
+  DATA_PATH: ../../../datasets/competencia_04_crudo.csv.gz
   UNDERSAMPLING: 0.2
   UNDERSAMPLING_OPTIMIZACION: 0.2
   UNDERSAMPLING_ENTRENAMIENTO_ENSAMBLE: 0.03
