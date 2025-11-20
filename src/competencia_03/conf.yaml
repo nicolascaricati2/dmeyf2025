@@ -1,5 +1,5 @@
 #yaml
-STUDY_NAME: Modelo Final US 0.2 - Uso Meses Corridos y seasonality - Agrego meses antes y despues
+STUDY_NAME: Modelo Final US 0.2 - Uso Meses Corridos y seasonality - Cambio IPC por Percentiles Rank V2
 competencia01:
   BUCKET_NAME: ../../../buckets/b1/Compe_02
   COSTO_ESTIMULO: 20000
@@ -11,7 +11,9 @@ competencia01:
   FINAL_PREDIC: 202106
   FINAL_PREDIC_JUNE: 202106
   FINAL_PREDIC_APRIL: 202104
-  FINAL_PREDIC_AGOSTO: 202108    
+  FINAL_PREDIC_JULIO: 202107
+  FINAL_PREDIC_AGOSTO: 202108 
+  FINAL_PREDIC_MAYO: 202105 
   FINAL_TRAIN:
   - 201901
   - 201902
@@ -311,14 +313,13 @@ competencia01:
 
   FINAL_TRAINING_GROUPS_JUNE:
     undersampled_training_june:  
-    - 201901
-    - 201902
-    - 201903
+    # - 201901
+    # - 201902
+    # - 201903
     - 201904
-    # - 201905
-    # - 201906
-    # - 201907
-    # - 201908
+    - 201905
+    - 201907
+    - 201908
     - 201909
     - 201910
     - 201911
@@ -327,37 +328,29 @@ competencia01:
     - 202002
     - 202003
     - 202004
-    # - 202005
+    - 202005
     # - 202006
-    # - 202007
-    # - 202008
+    - 202007
+    - 202008
     - 202009
     - 202010
     - 202011
+    full_used_training_june:
+    - 201906
     - 202012
     - 202101
     - 202102
-    # - 202103
-    # - 202104
-    full_used_training_june:
-    - 201905
-    - 201906
-    - 201907
-    - 201908
-    - 202005
-    - 202007
-    - 202008
     - 202103
     - 202104
 
   FINAL_TRAINING_GROUPS_APRIL:
     undersampled_training_april:  
-    - 201901
-    - 201902
+    # - 201901
+    # - 201902
     # - 201903
     # - 201904
-    # - 201905
-    # - 201906
+    - 201905
+    - 201906
     - 201907
     - 201908
     - 201909
@@ -366,28 +359,19 @@ competencia01:
     - 201912
     - 202001
     - 202002
-    # - 202003
-    # - 202004
-    # - 202005
+    - 202003
+    - 202004
+    - 202005
     # - 202006
     - 202007
     - 202008
     - 202009
     - 202010
+    full_used_training_april:
+    - 201904
+    - 202004
     - 202011
     - 202012
-    # - 202101
-    # - 202102
-    # - 202103
-    # - 202104
-    full_used_training_april:
-    - 201903
-    - 201904
-    - 201905
-    - 201906
-    - 202003
-    - 202004
-    - 202005
     - 202101
     - 202102
   FINAL_TRAINING_GROUPS_AGOSTO:
@@ -418,19 +402,89 @@ competencia01:
     - 202012
     - 202101
     - 202102
+    full_used_training_august:    
+    - 201908
+    - 202008
     - 202103
     - 202104
-    full_used_training_august:    
-    - 201907    
+    - 202105    
+    - 202106
+
+  FINAL_TRAINING_GROUPS_JULIO:
+    undersampled_training_julio:  
+    # - 201901
+    # - 201902
+    # - 201903
+    - 201904
+    - 201905
+    - 201906
+    # - 201907
     - 201908
     - 201909
-    - 201910
-    - 202007    
+    # - 201910
+    - 201911
+    - 201912
+    - 202001
+    - 202002
+    - 202003
+    - 202004
+    - 202005
+    # - 202006
+    # - 202007
     - 202008
     - 202009
     - 202010
+    - 202011
+    - 202012
+    - 202101
+    # - 202102
+    full_used_training_julio:    
+    - 201907
+    - 202007
+    - 202102
+    - 202103
+    - 202104
     - 202105    
-    - 202106
+
+
+  FINAL_TRAINING_GROUPS_MAYO:
+    undersampled_training_mayo:  
+    # - 201901
+    # - 201902
+    # - 201903
+    - 201904
+    # - 201905
+    - 201906
+    - 201907
+    - 201908
+    - 201909
+    # - 201910
+    - 201911
+    - 201912
+    - 202001
+    - 202002
+    - 202003
+    - 202004
+    # - 202005
+    # - 202006
+    - 202007
+    - 202008
+    - 202009
+    - 202010
+    - 202011
+    # - 202012
+    # - 202101
+    # # - 202102
+    full_used_training_mayo:    
+    - 201905
+    - 202005
+    - 202012
+    - 202101   
+    - 202102
+    - 202103
+ 
+
+
 
 
 
