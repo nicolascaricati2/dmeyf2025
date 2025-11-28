@@ -1,4 +1,8 @@
 # main
+# main
+# main
+
+
 
 
 import logging
@@ -71,7 +75,7 @@ def main():
     crear_snapshot_modelo(STUDY_NAME)
 
     # path_parquet = os.path.join(BUCKET_NAME, "data", f"df_fe{STUDY_NAME}.parquet")
-    path_parquet = "../../../buckets/b1/Compe_02/data/df_feModelo Final US 0.2 - Uso Meses Corridos y seasonality - Cambio IPC por Percentiles Rank V3.parquet"
+    path_parquet = "../../../buckets/b1/Compe_02/data/df_feModelo Final US 0.03 20 Semillas - Uso Meses Corridos - Optimizacion.parquet"
 
     if os.path.exists(path_parquet):
         logger.info("✅ df_fe.parquet encontrado")
@@ -123,12 +127,7 @@ def main():
 
         df_fe = feature_engineering_tc_total(df_fe)
         df_fe = variables_aux(df_fe)
-        # Excluyo las variables no corregidas          
-        cols_ajustar_ipc = [
-            c for c in df_fe.columns
-            if c.startswith(('m', 'Visa_m', 'Master_m','TC_Total_m')) and 'dolares' not in c
-        ]
-        df_fe = transformar_a_percentil_rank(df_fe, cols_ajustar_ipc, columna_mes='foto_mes')
+        # Excluyo las variables no corregidas 
 
         columnas_a_excluir = ["foto_mes","cliente_edad","numero_de_cliente","target","target_to_calculate_gan"]
         columnas_para_fe_regresiones = [
@@ -136,6 +135,13 @@ def main():
             if c.startswith(('m', 'Visa_m', 'Master_m','TC_Total_m','Visa_F', 'Visa_f','Master_F', 'Master_f')) 
             and c not in columnas_a_excluir
         ]
+        # cols_ajustar_ipc = [
+        #     c for c in df_fe.columns
+        #     if c.startswith(('m', 'Visa_m', 'Master_m','TC_Total_m')) and 'dolares' not in c
+        # ]
+        df_fe = transformar_a_percentil_rank(df_fe, columnas_para_fe_regresiones, columna_mes='foto_mes')
+
+
         
         columnas_para_fe_deltas = [
             c for c in df_fe.columns
@@ -177,7 +183,7 @@ def main():
 
     # # 4. Ejecutar optimización (función simple)
     
-    # study = optimizar(df_fe, n_trials=100,study_name = STUDY_NAME ,undersampling = UNDERSAMPLING_OPTIMIZACION)
+    # study = optimizar(df_fe, n_trials=25,study_name = STUDY_NAME ,undersampling = UNDERSAMPLING_OPTIMIZACION)
   
     # # 5. Análisis adicional
     # logger.info("=== ANÁLISIS DE RESULTADOS ===")
@@ -225,7 +231,9 @@ def main():
     # mejores_params = {'num_leaves': 121, 'learning_rate': 0.08944748172892189, 'min_data_in_leaf': 47, 'feature_fraction': 0.5831901957235187, 'bagging_fraction': 0.9395824062687965, 'num_boost_round': 818}
 
 
-    mejores_params = {'bagging_fraction': 0.288604819, 'feature_fraction': 0.727451551, 'lambda_l1': 1.573915301, 'lambda_l2': 3.131842205, 'learning_rate': 0.036350067, 'min_data_in_leaf': 13, 'num_boost_round': 779, 'num_leaves': 115} # Opti Nueva
+    # mejores_params = {'bagging_fraction': 0.6714999873184199, 'feature_fraction': 0.31776519651631674, 'lambda_l1': 0.2944267005943108, 'lambda_l2': 2.4490808003374225, 'learning_rate': 0.03518640034343286, 'min_data_in_leaf': 47, 'neg_bagging_fraction': 0.16338893024243595, 'num_boost_round': 778, 'num_leaves': 84, 'pos_bagging_fraction': 0.40622347584093277} # Opti Nueva
+
+    mejores_params = {'bagging_fraction': 0.6714999873184199, 'feature_fraction': 0.31776519651631674, 'learning_rate': 0.03518640034343286, 'min_data_in_leaf': 47, 'neg_bagging_fraction': 0.16338893024243595, 'num_boost_round': 778, 'num_leaves': 84, 'pos_bagging_fraction': 0.40622347584093277} # Opti Nueva sin lambas
     
 
 
@@ -246,43 +254,43 @@ def main():
   
     # === 06 Entrenar modelo final (distintos periodos) ===
     
-    # # Entrenamiento en Abril
-    # logger.info("=== ENTRENAMIENTO FINAL ABRIL ===")
+    # Entrenamiento en Abril
+    logger.info("=== ENTRENAMIENTO FINAL ABRIL ===")
     
-    # # Preparar datos por grupo y semilla con undersampling
-    # grupos_datos_abril = preparar_datos_entrenamiento_por_grupos_por_semilla(
-    #     df_fe,
-    #     FINAL_TRAINING_GROUPS_APRIL,
-    #     FINAL_PREDIC_APRIL,
-    #     undersampling_ratio=UNDERSAMPLING_ENTRENAMIENTO_ENSAMBLE,
-    #     semillas=SEMILLA
-    # )
+    # Preparar datos por grupo y semilla con undersampling
+    grupos_datos_abril = preparar_datos_entrenamiento_por_grupos_por_semilla(
+        df_fe,
+        FINAL_TRAINING_GROUPS_APRIL,
+        FINAL_PREDIC_APRIL,
+        undersampling_ratio=UNDERSAMPLING_ENTRENAMIENTO_ENSAMBLE,
+        semillas=SEMILLA
+    )
     
-    # # Preparar datos de predicción
-    # df_predict_abril = df_fe[df_fe["foto_mes"] == FINAL_PREDIC_APRIL]
-    # X_predict_abril = df_predict_abril.drop(columns=["target", "target_to_calculate_gan"])
-    # clientes_predict_abril = df_predict_abril["numero_de_cliente"].values
+    # Preparar datos de predicción
+    df_predict_abril = df_fe[df_fe["foto_mes"] == FINAL_PREDIC_APRIL]
+    X_predict_abril = df_predict_abril.drop(columns=["target", "target_to_calculate_gan"])
+    clientes_predict_abril = df_predict_abril["numero_de_cliente"].values
     
-    # # Entrenar modelos por grupo y semilla
-    # modelos_por_grupo_abril = entrenar_modelos_por_grupo_y_semilla(grupos_datos_abril, mejores_params)
+    # Entrenar modelos por grupo y semilla
+    modelos_por_grupo_abril = entrenar_modelos_por_grupo_y_semilla_y_parametros(grupos_datos_abril, mejores_params)
     
-    # # Generar predicciones finales (ahora con mes)
-    # resultados_abril = generar_predicciones_finales(
-    #     modelos_por_grupo_abril,
-    #     X_predict_abril,
-    #     clientes_predict_abril,
-    #     df_predict_abril,
-    #     top_k=TOP_K,
-    #     mes=FINAL_PREDIC_APRIL
-    # )
+    # Generar predicciones finales (ahora con mes)
+    resultados_abril = generar_predicciones_finales(
+        modelos_por_grupo_abril,
+        X_predict_abril,
+        clientes_predict_abril,
+        df_predict_abril,
+        top_k=TOP_K,
+        mes=FINAL_PREDIC_APRIL
+    )
     
-    # # Guardar predicciones
-    # guardar_predicciones_finales({"top_k": resultados_abril["top_k_global"]}, f"{FINAL_PREDIC_APRIL}_global")
-    # guardar_predicciones_finales({"top_k": resultados_abril["top_k_grupos"]}, f"{FINAL_PREDIC_APRIL}_grupos")
+    # Guardar predicciones
+    guardar_predicciones_finales({"top_k": resultados_abril["top_k_global"]}, f"{FINAL_PREDIC_APRIL}_global")
+    guardar_predicciones_finales({"top_k": resultados_abril["top_k_grupos"]}, f"{FINAL_PREDIC_APRIL}_grupos")
     
-    # # Guardar ganancias
-    # resultados_abril["ganancias"].to_csv(f"predict/ganancias_{STUDY_NAME}_{FINAL_PREDIC_APRIL}.csv", index=False)
-    # logger.info(f"✅ CSV de ganancias guardado: predict/ganancias_{STUDY_NAME}_{FINAL_PREDIC_APRIL}.csv")
+    # Guardar ganancias
+    resultados_abril["ganancias"].to_csv(f"predict/ganancias_{STUDY_NAME}_{FINAL_PREDIC_APRIL}.csv", index=False)
+    logger.info(f"✅ CSV de ganancias guardado: predict/ganancias_{STUDY_NAME}_{FINAL_PREDIC_APRIL}.csv")
 
     # Entrenamiento en Mayo
     logger.info("=== ENTRENAMIENTO FINAL MAYO ===")
@@ -302,7 +310,7 @@ def main():
     clientes_predict_mayo = df_predict_mayo["numero_de_cliente"].values
     
     # Entrenar modelos por grupo y semilla
-    modelos_por_grupo_mayo = entrenar_modelos_por_grupo_y_semilla(grupos_datos_mayo, mejores_params)
+    modelos_por_grupo_mayo = entrenar_modelos_por_grupo_y_semilla_y_parametros(grupos_datos_mayo, mejores_params)
     
     # Generar predicciones finales (ahora con mes)
     resultados_mayo = generar_predicciones_finales(
@@ -323,46 +331,43 @@ def main():
     logger.info(f"✅ CSV de ganancias guardado: predict/ganancias_{STUDY_NAME}_{FINAL_PREDIC_MAYO}.csv")
 
     
+    # Entrenamiento en Junio
+    logger.info("=== ENTRENAMIENTO FINAL JUNIO ===")
     
-        
+    # Preparar datos por grupo y semilla con undersampling
+    grupos_datos_junio = preparar_datos_entrenamiento_por_grupos_por_semilla(
+        df_fe,
+        FINAL_TRAINING_GROUPS_JUNE,
+        FINAL_PREDIC_JUNE,
+        undersampling_ratio=UNDERSAMPLING_ENTRENAMIENTO_ENSAMBLE,
+        semillas=SEMILLA
+    )
     
-    # # Entrenamiento en Junio
-    # logger.info("=== ENTRENAMIENTO FINAL JUNIO ===")
+    # Preparar datos de predicción
+    df_predict_junio = df_fe[df_fe["foto_mes"] == FINAL_PREDIC_JUNE]
+    X_predict_junio = df_predict_junio.drop(columns=["target", "target_to_calculate_gan"])
+    clientes_predict_junio = df_predict_junio["numero_de_cliente"].values
     
-    # # Preparar datos por grupo y semilla con undersampling
-    # grupos_datos_junio = preparar_datos_entrenamiento_por_grupos_por_semilla(
-    #     df_fe,
-    #     FINAL_TRAINING_GROUPS_JUNE,
-    #     FINAL_PREDIC_JUNE,
-    #     undersampling_ratio=UNDERSAMPLING_ENTRENAMIENTO_ENSAMBLE,
-    #     semillas=SEMILLA
-    # )
+    # Entrenar modelos por grupo y semilla
+    modelos_por_grupo_junio = entrenar_modelos_por_grupo_y_semilla_y_parametros(grupos_datos_junio, mejores_params)
     
-    # # Preparar datos de predicción
-    # df_predict_junio = df_fe[df_fe["foto_mes"] == FINAL_PREDIC_JUNE]
-    # X_predict_junio = df_predict_junio.drop(columns=["target", "target_to_calculate_gan"])
-    # clientes_predict_junio = df_predict_junio["numero_de_cliente"].values
+    # Generar predicciones finales (ahora con mes)
+    resultados_junio = generar_predicciones_finales(
+        modelos_por_grupo_junio,
+        X_predict_junio,
+        clientes_predict_junio,
+        df_predict_junio,
+        top_k=TOP_K,
+        mes=FINAL_PREDIC_JUNE
+    )
     
-    # # Entrenar modelos por grupo y semilla
-    # modelos_por_grupo_junio = entrenar_modelos_por_grupo_y_semilla(grupos_datos_junio, mejores_params)
+    # Guardar predicciones
+    guardar_predicciones_finales({"top_k": resultados_junio["top_k_global"]}, f"{FINAL_PREDIC_JUNE}_global")
+    guardar_predicciones_finales({"top_k": resultados_junio["top_k_grupos"]}, f"{FINAL_PREDIC_JUNE}_grupos")
     
-    # # Generar predicciones finales (ahora con mes)
-    # resultados_junio = generar_predicciones_finales(
-    #     modelos_por_grupo_junio,
-    #     X_predict_junio,
-    #     clientes_predict_junio,
-    #     df_predict_junio,
-    #     top_k=TOP_K,
-    #     mes=FINAL_PREDIC_JUNE
-    # )
-    
-    # # Guardar predicciones
-    # guardar_predicciones_finales({"top_k": resultados_junio["top_k_global"]}, f"{FINAL_PREDIC_JUNE}_global")
-    # guardar_predicciones_finales({"top_k": resultados_junio["top_k_grupos"]}, f"{FINAL_PREDIC_JUNE}_grupos")
-    
-    # # Guardar ganancias
-    # resultados_junio["ganancias"].to_csv(f"predict/ganancias_{STUDY_NAME}_{FINAL_PREDIC_JUNE}.csv", index=False)
-    # logger.info(f"✅ CSV de ganancias guardado: predict/ganancias_{STUDY_NAME}_{FINAL_PREDIC_JUNE}.csv")
+    # Guardar ganancias
+    resultados_junio["ganancias"].to_csv(f"predict/ganancias_{STUDY_NAME}_{FINAL_PREDIC_JUNE}.csv", index=False)
+    logger.info(f"✅ CSV de ganancias guardado: predict/ganancias_{STUDY_NAME}_{FINAL_PREDIC_JUNE}.csv")
 
     
     # Entrenamiento en Julio
@@ -383,7 +388,7 @@ def main():
     clientes_predict_julio = df_predict_julio["numero_de_cliente"].values
     
     # Entrenar modelos por grupo y semilla
-    modelos_por_grupo_julio = entrenar_modelos_por_grupo_y_semilla(grupos_datos_julio, mejores_params)
+    modelos_por_grupo_julio = entrenar_modelos_por_grupo_y_semilla_y_parametros(grupos_datos_julio, mejores_params)
     
     # Generar predicciones finales (ahora con mes)
     resultados_julio = generar_predicciones_finales(
